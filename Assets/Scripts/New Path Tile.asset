@@ -34,5 +34,21 @@ MonoBehaviour:
   m_InstancedGameObject: {fileID: 0}
   m_Flags: 1
   m_ColliderType: 1
-  noConnectTileSprite: {fileID: 1870614622, guid: 1ca602ebbf12fe248abf57941ce0e590, type: 3}
-  test: {fileID: 509820683, guid: 1ca602ebbf12fe248abf57941ce0e590, type: 3}
+  DefaultSprite: {fileID: 0}
+  someNum: 26
+  isConnect_N: 0
+  isConnect_S: 0
+  isConnect_W: 0
+  isConnect_E: 0
+  TileCondition:
+    Sprite: {fileID: 0}
+    isConnect_N: 0
+    isConnect_S: 0
+    isConnect_W: 0
+    isConnect_E: 0
+  TileConditions:
+  - Sprite: {fileID: 0}
+    isConnect_N: 0
+    isConnect_S: 0
+    isConnect_W: 0
+    isConnect_E: 0

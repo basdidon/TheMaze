@@ -1,5 +1,12 @@
 {
   "dependencies": {
+    "basdidonunitypackage": {
+      "version": "https://github.com/basdidon/basdidonUnityPackage.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "a92cf0e19f14a7f409473612ab516f8fa85482ee"
+    },
     "com.unity.2d.animation": {
       "version": "9.0.3",
       "depth": 1,
