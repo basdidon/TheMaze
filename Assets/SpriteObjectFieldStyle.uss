@@ -1,0 +1,34 @@
+:root {
+  --sprite-preview-size:100;
+}
+
+ObjectField {
+	background-color: rgba(0, 0, 0, 0);
+	margin:auto;
+}
+
+.unity-image {
+
+}
+
+.unity-object-field__object{
+	flex-grow:1;
+	
+}
+
+.unity-object-field-display__icon{
+	max-height:var(--sprite-preview-size);
+	max-width:var(--sprite-preview-size);
+	
+}
+
+.unity-object-field-display__label{
+	display:none;
+}
+
+.unity-object-field__selector{
+	position:absolute;
+	bottom:0;
+	right:0;
+	background-image:none;
+}

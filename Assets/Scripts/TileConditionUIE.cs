@@ -13,6 +13,7 @@ public class TileCondition
     public bool isConnect_S;
     public bool isConnect_W;
     public bool isConnect_E;
+    public string someText = "hehe";
 
     public bool TryGetSprite(int code, out Sprite sprite)
     {
@@ -42,14 +43,46 @@ public class TileCondition
 [CustomPropertyDrawer(typeof(TileCondition))]
 public class TileConditionUIE : PropertyDrawer
 {
-    public override void OnGUI(Rect rect, SerializedProperty property, GUIContent label)
-    {
-        var spriteProperty = property.FindPropertyRelative("Sprite");
+    ObjectField spriteObjectField;
+    VisualElement objectFieldDisplay;
+    VisualElement objectFieldInput;
+    Image spritePreview;
 
-        EditorGUIUtility.wideMode = true;
-        EditorGUIUtility.labelWidth = 70;
-        rect.height /= 2;
-        //spriteProperty = EditorGUI.ObjectField(rect, spriteProperty,typeof(Sprite), new GUIContent());
-        rect.y += rect.height;
+    public override VisualElement CreatePropertyGUI(SerializedProperty property)
+    {
+        var assetTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/Editor/UiDocs/CustomTileRuleEditor.uxml");
+        var root = assetTree.Instantiate();
+
+        spriteObjectField = root.Q<ObjectField>();
+        spriteObjectField.RegisterValueChangedCallback(OnSpriteChanged);
+        objectFieldDisplay = root.Q<VisualElement>(null,new string[] { ObjectField.objectUssClassName });
+        objectFieldDisplay.style.display = DisplayStyle.None;
+        objectFieldInput = root.Q<VisualElement>(null, new string[] { ObjectField.inputUssClassName });
+        spritePreview = new Image();
+        objectFieldInput.Insert(0,spritePreview);
+        //spritePreview.image = AssetDatabase.LoadAssetAtPath<Texture>("Assets/fridge.png");
+
+        GameObject selectedObject = Selection.activeObject as GameObject;
+        if (selectedObject != null)
+        {
+            SerializedObject so = new(selectedObject);
+            // Bind it to the root of the hierarchy. It will find the right object to bind to.
+            root.Bind(so);
+        }
+        else
+        {
+            root.Unbind();
+        }
+
+        return root;
+        //return base.CreatePropertyGUI(property);
+    }
+
+    void OnSpriteChanged(ChangeEvent<UnityEngine.Object> callback)
+    {
+        if(callback.newValue is Sprite sprite)
+        {
+            spritePreview.sprite = sprite;
+        }
     }
 }

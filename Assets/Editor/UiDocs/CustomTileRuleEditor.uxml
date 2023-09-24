@@ -1,22 +1,22 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
     <Style src="project://database/Assets/CustomTileRuleStyle.uss?fileID=7433441132597879392&amp;guid=de4c5b63146768b46ab001ccc39e7322&amp;type=3#CustomTileRuleStyle" />
-    <ui:VisualElement name="VisualElement" style="flex-direction: row; flex-grow: 1;">
-        <ui:VisualElement style="justify-content: center; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; flex-grow: 1;">
-            <ui:VisualElement class="grid-row">
-                <ui:VisualElement name="N" class="condition-box" style="border-bottom-width: 0;" />
+    <Style src="project://database/Assets/SpriteObjectFieldStyle.uss?fileID=7433441132597879392&amp;guid=b6a5708f55b4cb7479e839cf89fbb1d3&amp;type=3#SpriteObjectFieldStyle" />
+    <ui:VisualElement style="flex-grow: 1;">
+        <ui:VisualElement name="VisualElement" style="flex-direction: row; flex-grow: 1;">
+            <ui:VisualElement class="column-container">
+                <ui:VisualElement class="grid-row">
+                    <ui:VisualElement name="N" class="condition-box" style="border-bottom-width: 0;" />
+                </ui:VisualElement>
+                <ui:VisualElement class="grid-row">
+                    <ui:VisualElement name="W" class="condition-box" style="border-right-width: 0;" />
+                    <ui:VisualElement name="This" class="condition-box" />
+                    <ui:VisualElement name="E" class="condition-box" style="border-left-width: 0;" />
+                </ui:VisualElement>
+                <ui:VisualElement class="grid-row">
+                    <ui:VisualElement name="S" class="condition-box" style="border-top-width: 0;" />
+                </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement class="grid-row">
-                <ui:VisualElement name="W" class="condition-box" style="border-right-width: 0;" />
-                <ui:VisualElement name="This" class="condition-box" />
-                <ui:VisualElement name="E" class="condition-box" style="border-left-width: 0;" />
-            </ui:VisualElement>
-            <ui:VisualElement class="grid-row">
-                <ui:VisualElement name="S" class="condition-box" style="border-top-width: 0;" />
-            </ui:VisualElement>
-        </ui:VisualElement>
-        <ui:VisualElement name="sprite-importer-container" style="background-color: rgb(255, 0, 0); max-width: 100px; max-height: 100px; min-width: 100px; min-height: 100px;">
-            <ui:VisualElement style="flex-grow: 1; max-width: 100px; max-height: 100px; min-width: 100px; min-height: 100px;" />
-            <ui:VisualElement style="flex-grow: 1; position: absolute;" />
+            <uie:ObjectField binding-path="Sprite" type="UnityEngine.Sprite, UnityEngine.CoreModule" style="height: 100px; width: 100px; flex-direction: column;" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

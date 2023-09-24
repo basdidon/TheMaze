@@ -50,11 +50,13 @@ public class PathTile : Tile
         return code;
     }
 }
-
+/*
 #if UNITY_EDITOR
+
 [CustomEditor(typeof(PathTile))]
 class TileConditionEditor : Editor
 {
+    
     public override void OnInspectorGUI()
     {
         var PathTile = (PathTile) target;
@@ -71,3 +73,4 @@ class TileConditionEditor : Editor
     }
 }
 #endif
+*/

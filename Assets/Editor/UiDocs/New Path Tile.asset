@@ -41,14 +41,22 @@ MonoBehaviour:
   isConnect_W: 0
   isConnect_E: 0
   TileCondition:
-    Sprite: {fileID: 0}
+    Sprite: {fileID: 21300000, guid: bef3ded880446e34cbfddad4f96d0d43, type: 3}
     isConnect_N: 0
     isConnect_S: 0
     isConnect_W: 0
     isConnect_E: 0
+    someText: safdsafhhfdhdhdhd
   TileConditions:
-  - Sprite: {fileID: 0}
+  - Sprite: {fileID: 1406620121, guid: 1ca602ebbf12fe248abf57941ce0e590, type: 3}
     isConnect_N: 0
     isConnect_S: 0
     isConnect_W: 0
     isConnect_E: 0
+    someText: 
+  - Sprite: {fileID: 869858137, guid: 1ca602ebbf12fe248abf57941ce0e590, type: 3}
+    isConnect_N: 0
+    isConnect_S: 0
+    isConnect_W: 0
+    isConnect_E: 0
+    someText: 
