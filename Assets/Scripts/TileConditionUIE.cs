@@ -43,24 +43,42 @@ public class TileCondition
 [CustomPropertyDrawer(typeof(TileCondition))]
 public class TileConditionUIE : PropertyDrawer
 {
-    ObjectField spriteObjectField;
-    VisualElement objectFieldDisplay;
-    VisualElement objectFieldInput;
-    Image spritePreview;
+    int count = 0;
 
     public override VisualElement CreatePropertyGUI(SerializedProperty property)
     {
+        count = 0;
+
+        // Load Uxml
         var assetTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/Editor/UiDocs/CustomTileRuleEditor.uxml");
         var root = assetTree.Instantiate();
 
-        spriteObjectField = root.Q<ObjectField>();
-        spriteObjectField.RegisterValueChangedCallback(OnSpriteChanged);
-        objectFieldDisplay = root.Q<VisualElement>(null,new string[] { ObjectField.objectUssClassName });
-        objectFieldDisplay.style.display = DisplayStyle.None;
-        objectFieldInput = root.Q<VisualElement>(null, new string[] { ObjectField.inputUssClassName });
-        spritePreview = new Image();
-        objectFieldInput.Insert(0,spritePreview);
-        //spritePreview.image = AssetDatabase.LoadAssetAtPath<Texture>("Assets/fridge.png");
+        VisualElement objectFieldDisplay = root.Q<VisualElement>(null, new string[] { ObjectField.objectUssClassName });
+        VisualElement objectFieldDisplayIcon = objectFieldDisplay.Q<Image>();
+        //objectFieldDisplayIcon.style.display = DisplayStyle.None;
+        objectFieldDisplayIcon.RemoveFromClassList("unity-object-field-display__icon");
+        objectFieldDisplayIcon.RemoveFromClassList("unity-image");
+        VisualElement objectFieldInput = root.Q<VisualElement>(null, new string[] { ObjectField.inputUssClassName });
+
+        Label name = new()
+        {
+            text = count.ToString()
+        };
+        
+        Image spritePreview = new ();
+        objectFieldInput.Insert(0, spritePreview);
+
+        ObjectField spriteObjectField = root.Q<ObjectField>();
+        spriteObjectField.RegisterValueChangedCallback((ev)=> {
+            if (ev.newValue is Sprite sprite)
+            {
+                spritePreview.sprite = sprite;
+                count++;
+                name.text = count.ToString();
+            }
+        });
+        
+        root.Add(name);
 
         GameObject selectedObject = Selection.activeObject as GameObject;
         if (selectedObject != null)
@@ -75,14 +93,5 @@ public class TileConditionUIE : PropertyDrawer
         }
 
         return root;
-        //return base.CreatePropertyGUI(property);
-    }
-
-    void OnSpriteChanged(ChangeEvent<UnityEngine.Object> callback)
-    {
-        if(callback.newValue is Sprite sprite)
-        {
-            spritePreview.sprite = sprite;
-        }
     }
 }

@@ -48,13 +48,19 @@ MonoBehaviour:
     isConnect_E: 0
     someText: safdsafhhfdhdhdhd
   TileConditions:
-  - Sprite: {fileID: 1406620121, guid: 1ca602ebbf12fe248abf57941ce0e590, type: 3}
+  - Sprite: {fileID: 2104688425, guid: 1ca602ebbf12fe248abf57941ce0e590, type: 3}
     isConnect_N: 0
     isConnect_S: 0
     isConnect_W: 0
     isConnect_E: 0
     someText: 
-  - Sprite: {fileID: 869858137, guid: 1ca602ebbf12fe248abf57941ce0e590, type: 3}
+  - Sprite: {fileID: 250106993, guid: 1ca602ebbf12fe248abf57941ce0e590, type: 3}
+    isConnect_N: 0
+    isConnect_S: 0
+    isConnect_W: 0
+    isConnect_E: 0
+    someText: 
+  - Sprite: {fileID: 0}
     isConnect_N: 0
     isConnect_S: 0
     isConnect_W: 0
