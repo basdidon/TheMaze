@@ -3,11 +3,7 @@
     <Style src="project://database/Assets/SpriteObjectFieldStyle.uss?fileID=7433441132597879392&amp;guid=b6a5708f55b4cb7479e839cf89fbb1d3&amp;type=3#SpriteObjectFieldStyle" />
     <ui:VisualElement style="flex-grow: 1;">
         <ui:VisualElement name="VisualElement" style="flex-direction: row; flex-grow: 1;">
-            <ui:VisualElement class="column-container">
-                <ui:VisualElement name="rule-picker-top-row" class="grid-row" />
-                <ui:VisualElement name="rule-picker-middle-row" class="grid-row" />
-                <ui:VisualElement name="rule-picker-bottom-row" class="grid-row" />
-            </ui:VisualElement>
+            <ui:VisualElement name="tile-rule-picker-container" class="column-container" />
             <uie:ObjectField binding-path="Sprite" type="UnityEngine.Sprite, UnityEngine.CoreModule" style="height: 100px; width: 100px; flex-direction: column;" />
         </ui:VisualElement>
     </ui:VisualElement>

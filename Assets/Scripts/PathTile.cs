@@ -1,25 +1,15 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using UnityEditor;
-using UnityEditor.UIElements;
-using System;
-
-public enum IngredientUnit { Spoon, Cup, Bowl, Piece }
 
 [CreateAssetMenu(menuName = "PathTile")]
 public class PathTile : Tile
 {
+    //[Header("DefaultSprite")]
     public Sprite DefaultSprite;
 
-    public int someNum;
+    //[Header("Condition")]
+    public TileConnection connection;
 
-    [Header("Condition")]
-    [SerializeField] bool isConnect_N;
-    [SerializeField] bool isConnect_S;
-    [SerializeField] bool isConnect_W;
-    [SerializeField] bool isConnect_E;
- 
-    [SerializeField] TileCondition TileCondition;
     [SerializeField] TileCondition[] TileConditions;
  
     public override void GetTileData(Vector3Int position, ITilemap tilemap, ref TileData tileData)
@@ -31,7 +21,7 @@ public class PathTile : Tile
         var conditionCode = GetConditionCode();
         foreach(var tile in TileConditions)
         {
-            if (tile.TryGetSprite(conditionCode,out Sprite sprite))
+            if (tile.TryGetSprite(connection,out Sprite sprite))
             {
                 tileData.sprite = sprite;
                 break;
@@ -43,10 +33,6 @@ public class PathTile : Tile
     private int GetConditionCode()
     {
         int code = 0;
-        code |= (isConnect_N ? 1 : 0) << 3;
-        code |= (isConnect_S ? 1 : 0) << 2;
-        code |= (isConnect_W ? 1 : 0) << 1;
-        code |= (isConnect_E ? 1 : 0);
         return code;
     }
 }
