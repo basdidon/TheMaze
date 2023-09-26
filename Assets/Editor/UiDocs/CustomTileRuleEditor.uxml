@@ -4,17 +4,9 @@
     <ui:VisualElement style="flex-grow: 1;">
         <ui:VisualElement name="VisualElement" style="flex-direction: row; flex-grow: 1;">
             <ui:VisualElement class="column-container">
-                <ui:VisualElement class="grid-row">
-                    <ui:VisualElement name="N" class="condition-box" style="border-bottom-width: 0;" />
-                </ui:VisualElement>
-                <ui:VisualElement class="grid-row">
-                    <ui:VisualElement name="W" class="condition-box" style="border-right-width: 0;" />
-                    <ui:VisualElement name="This" class="condition-box" />
-                    <ui:VisualElement name="E" class="condition-box" style="border-left-width: 0;" />
-                </ui:VisualElement>
-                <ui:VisualElement class="grid-row">
-                    <ui:VisualElement name="S" class="condition-box" style="border-top-width: 0;" />
-                </ui:VisualElement>
+                <ui:VisualElement name="rule-picker-top-row" class="grid-row" />
+                <ui:VisualElement name="rule-picker-middle-row" class="grid-row" />
+                <ui:VisualElement name="rule-picker-bottom-row" class="grid-row" />
             </ui:VisualElement>
             <uie:ObjectField binding-path="Sprite" type="UnityEngine.Sprite, UnityEngine.CoreModule" style="height: 100px; width: 100px; flex-direction: column;" />
         </ui:VisualElement>

@@ -37,32 +37,36 @@ MonoBehaviour:
   DefaultSprite: {fileID: 0}
   someNum: 26
   isConnect_N: 0
-  isConnect_S: 0
+  isConnect_S: 1
   isConnect_W: 0
   isConnect_E: 0
   TileCondition:
-    Sprite: {fileID: 21300000, guid: bef3ded880446e34cbfddad4f96d0d43, type: 3}
-    isConnect_N: 0
-    isConnect_S: 0
-    isConnect_W: 0
-    isConnect_E: 0
-    someText: safdsafhhfdhdhdhd
+    Sprite: {fileID: 2123906707, guid: 1ca602ebbf12fe248abf57941ce0e590, type: 3}
+    rule4Dir:
+      rule_n: 0
+      rule_s: 0
+      rule_w: 0
+      rule_e: 0
+    count: 11
   TileConditions:
-  - Sprite: {fileID: 2104688425, guid: 1ca602ebbf12fe248abf57941ce0e590, type: 3}
-    isConnect_N: 0
-    isConnect_S: 0
-    isConnect_W: 0
-    isConnect_E: 0
-    someText: 
+  - Sprite: {fileID: 21300000, guid: bef3ded880446e34cbfddad4f96d0d43, type: 3}
+    rule4Dir:
+      rule_n: 1
+      rule_s: 1
+      rule_w: 1
+      rule_e: 0
+    count: 2
+  - Sprite: {fileID: 2123906707, guid: 1ca602ebbf12fe248abf57941ce0e590, type: 3}
+    rule4Dir:
+      rule_n: 0
+      rule_s: 0
+      rule_w: 0
+      rule_e: 0
+    count: 0
   - Sprite: {fileID: 250106993, guid: 1ca602ebbf12fe248abf57941ce0e590, type: 3}
-    isConnect_N: 0
-    isConnect_S: 0
-    isConnect_W: 0
-    isConnect_E: 0
-    someText: 
-  - Sprite: {fileID: 0}
-    isConnect_N: 0
-    isConnect_S: 0
-    isConnect_W: 0
-    isConnect_E: 0
-    someText: 
+    rule4Dir:
+      rule_n: 0
+      rule_s: 0
+      rule_w: 0
+      rule_e: 0
+    count: 0
