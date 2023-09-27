@@ -4,57 +4,49 @@ using UnityEngine;
 using System;
 using UnityEditor;
 using UnityEngine.UIElements;
-using UnityEditor.UIElements;
-
-public enum TileRules { ANY = 0, CONNECT = 1, NOT_CONNECT = 2 }
 
 [Serializable]
-public struct TileRulePicker
+public struct TileConnection
 {
-    public TileRules rule_n;
-    public TileRules rule_s;
-    public TileRules rule_w;
-    public TileRules rule_e;
+    public bool isConnectN;
+    public bool isConnectS;
+    public bool isConnectW;
+    public bool isConnectE;
 
-    public bool IsMacth(TileConnection connection)
+    public TileConnection(bool n = false,bool w = false, bool e = false, bool s = false)
     {
-        if(!IsRuleMacth(rule_n, connection.isConnectN))
-        {
-            return false;
-        }else if(!IsRuleMacth(rule_w, connection.isConnectW))
-        {
-            return false;
-        }else if(!IsRuleMacth(rule_e, connection.isConnectE))
-        {
-            return false;
-        }else if(!IsRuleMacth(rule_s, connection.isConnectS))
-        {
-            return false;
-        }
-        return true;
+        isConnectN = n;
+        isConnectW = w;
+        isConnectE = e;
+        isConnectS = s;
     }
 
-    bool IsRuleMacth(TileRules tileRules,bool isConnect)
+    public TileConnection(int code)
     {
-        if(tileRules == TileRules.ANY)
-        {
-            return true;
-        }    
-        else if(tileRules == TileRules.CONNECT && isConnect)
-        {
-            return true;
-        }
-        else if(tileRules == TileRules.NOT_CONNECT && !isConnect)
-        {
-            return true;
-        }
+        isConnectN = ((code >> 3) & 1) == 1;
+        isConnectW = ((code >> 2) & 1) == 1;
+        isConnectE = ((code >> 1) & 1) == 1;
+        isConnectS = (code & 1) == 1;
+    }
 
-        return false;
+    public int GetConditionCode()
+    {
+        int code = 0;
+        code |= (isConnectN ? 1 : 0) << 3;
+        code |= (isConnectS ? 1 : 0) << 2;
+        code |= (isConnectW ? 1 : 0) << 1;
+        code |= (isConnectE ? 1 : 0);
+        return code;
+    }
+
+    public override string ToString()
+    {
+        return $"[{isConnectN},{isConnectS},{isConnectW},{isConnectE}]";
     }
 }
 
-[CustomPropertyDrawer(typeof(TileRulePicker))]
-public class TileRulePickerPropotyDrawer : PropertyDrawer
+[CustomPropertyDrawer(typeof(TileConnection))]
+public class TileConnectionPropotyDrawer : PropertyDrawer
 {
     readonly Sprite crossSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Editor/UiDocs/Sprites/close.png");
     readonly Sprite rightArrowSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Editor/UiDocs/Sprites/right-arrow.png");
@@ -63,14 +55,14 @@ public class TileRulePickerPropotyDrawer : PropertyDrawer
     {
         var assetTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/Editor/UiDocs/TileRulePickerEditor.uxml");
         var root = assetTree.Instantiate();
-        CreateRulePickers(root,property);
+        CreateTileConnectionFields(root, property);
 
         return root;
     }
 
     readonly string[] rulePickerKeywords = new string[] { "n", "w", string.Empty, "e", "s" };
 
-    void CreateRulePickers(VisualElement root, SerializedProperty property)
+    void CreateTileConnectionFields(VisualElement root,SerializedProperty property)
     {
         var topRow = root.Q<VisualElement>("rule-picker-top-row");
         var middleRow = root.Q<VisualElement>("rule-picker-middle-row");
@@ -82,16 +74,13 @@ public class TileRulePickerPropotyDrawer : PropertyDrawer
             rulePicker.AddToClassList("condition-box");
             if (keyword != string.Empty)
             {
-                Debug.Log(keyword);
-                var propertyName = $"rule_{keyword}";
-                rulePicker.sprite = GetRulePickerSprite(property.FindPropertyRelative(propertyName).enumValueIndex);
+                var propertyName = $"isConnect{keyword.ToUpper()}";
+                rulePicker.sprite = GetRulePickerSprite(property.FindPropertyRelative(propertyName).boolValue);
                 rulePicker.RegisterCallback<MouseDownEvent>(ev =>
                 {
-                    int enumValue = property.FindPropertyRelative(propertyName).enumValueIndex;
-                    enumValue = (enumValue + 1) % Enum.GetValues(typeof(TileRules)).Length;
-                    property.FindPropertyRelative(propertyName).enumValueIndex = enumValue;
+                    property.FindPropertyRelative(propertyName).boolValue ^= true;
 
-                    rulePicker.sprite = GetRulePickerSprite(enumValue);
+                    rulePicker.sprite = GetRulePickerSprite(property.FindPropertyRelative(propertyName).boolValue);
 
                     // Update Changed value
                     property.serializedObject.ApplyModifiedProperties();
@@ -132,16 +121,15 @@ public class TileRulePickerPropotyDrawer : PropertyDrawer
             };
 
         }
+
+        Sprite GetRulePickerSprite(bool isConnect)
+        {
+            return isConnect switch
+            {
+                false => crossSprite,
+                true => rightArrowSprite,
+            };
+        }
     }
 
-    Sprite GetRulePickerSprite(int tileRuleIndex)
-    {
-        return tileRuleIndex switch
-        {
-            (int)TileRules.ANY => null,
-            (int)TileRules.CONNECT => rightArrowSprite,
-            (int)TileRules.NOT_CONNECT => crossSprite,
-            _ => throw new Exception("unexpected enum index value."),
-        };
-    }
 }

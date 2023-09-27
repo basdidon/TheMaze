@@ -155,8 +155,12 @@ MonoBehaviour:
   <GroundTileMap>k__BackingField: {fileID: 381596386}
   <PathTileMap>k__BackingField: {fileID: 77242065}
   <GroundTile>k__BackingField: {fileID: 11400000, guid: 52dcb930b0bdfc248b98f6e3e33f8525, type: 2}
-  <PathTile>k__BackingField: {fileID: 11400000, guid: 383c0be265c52d34c998f22fc9d21da6, type: 2}
-  <MapSize>k__BackingField: {x: 10, y: 10}
+  <PathTile>k__BackingField: {fileID: 11400000, guid: 1e286110e85f3a445a4110371bd0353b, type: 2}
+  <MapRect>k__BackingField:
+    x: 0
+    y: 0
+    width: 20
+    height: 20
 --- !u!4 &25874508
 Transform:
   m_ObjectHideFlags: 0

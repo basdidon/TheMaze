@@ -1,5 +1,6 @@
 using UnityEditor;
 using UnityEngine.UIElements;
+using UnityEngine.Tilemaps;
 using UnityEditor.UIElements;
 using UnityEngine;
 using System;
@@ -9,7 +10,6 @@ public class TileCondition
 {
     public Sprite Sprite;
     public TileRulePicker rule4Dir;
-    public int count;
 
     public bool TryGetSprite(TileConnection connection, out Sprite sprite)
     {
@@ -26,7 +26,7 @@ public class TileCondition
 }
 
 [CustomPropertyDrawer(typeof(TileCondition))]
-public class TileConditionUIE : PropertyDrawer
+public class TileConditionPropertyDrawer : PropertyDrawer
 {
     public override VisualElement CreatePropertyGUI(SerializedProperty property)
     {
@@ -50,10 +50,15 @@ public class TileConditionUIE : PropertyDrawer
         
         ObjectField spriteObjectField = root.Q<ObjectField>();
         spriteObjectField.RegisterValueChangedCallback((ev)=> {
-            if (ev.newValue is Sprite sprite)
+            if(ev.newValue is Sprite sprite)
             {
                 objectFieldDisplayIcon.AddToClassList("hidden");
                 spritePreview.sprite = sprite;
+            }
+            if (ev.newValue is Tile tile)
+            {
+                objectFieldDisplayIcon.AddToClassList("hidden");
+                spritePreview.sprite = tile.sprite;
             }
             else if(ev.newValue == null)
             {
