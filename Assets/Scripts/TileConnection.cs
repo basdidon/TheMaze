@@ -8,43 +8,44 @@ using UnityEngine.UIElements;
 [Serializable]
 public struct TileConnection
 {
-    public bool isConnectN;
-    public bool isConnectS;
-    public bool isConnectW;
-    public bool isConnectE;
+    [SerializeField] public bool IsConnectN { get; set; }
+    [SerializeField] public bool IsConnectS { get; set; }
+    [SerializeField] public bool IsConnectW { get; set; }
+    [SerializeField] public bool IsConnectE { get; set; }
 
     public TileConnection(bool n = false,bool w = false, bool e = false, bool s = false)
     {
-        isConnectN = n;
-        isConnectW = w;
-        isConnectE = e;
-        isConnectS = s;
+        IsConnectN = n;
+        IsConnectW = w;
+        IsConnectE = e;
+        IsConnectS = s;
     }
 
     public TileConnection(int code)
     {
-        isConnectN = ((code >> 3) & 1) == 1;
-        isConnectW = ((code >> 2) & 1) == 1;
-        isConnectE = ((code >> 1) & 1) == 1;
-        isConnectS = (code & 1) == 1;
+        IsConnectN = ((code >> 3) & 1) == 1;
+        IsConnectS = ((code >> 2) & 1) == 1;
+        IsConnectW = ((code >> 1) & 1) == 1;
+        IsConnectE = (code & 1) == 1;
     }
 
     public int GetConditionCode()
     {
         int code = 0;
-        code |= (isConnectN ? 1 : 0) << 3;
-        code |= (isConnectS ? 1 : 0) << 2;
-        code |= (isConnectW ? 1 : 0) << 1;
-        code |= (isConnectE ? 1 : 0);
+        code |= (IsConnectN ? 1 : 0) << 3;
+        code |= (IsConnectS ? 1 : 0) << 2;
+        code |= (IsConnectW ? 1 : 0) << 1;
+        code |= (IsConnectE ? 1 : 0);
         return code;
     }
 
     public override string ToString()
     {
-        return $"[{isConnectN},{isConnectS},{isConnectW},{isConnectE}]";
+        return $"[{IsConnectN},{IsConnectS},{IsConnectW},{IsConnectE}]";
     }
 }
 
+#if UNITY_EDITOR
 [CustomPropertyDrawer(typeof(TileConnection))]
 public class TileConnectionPropotyDrawer : PropertyDrawer
 {
@@ -133,3 +134,4 @@ public class TileConnectionPropotyDrawer : PropertyDrawer
     }
 
 }
+#endif

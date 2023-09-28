@@ -25,6 +25,7 @@ public class TileCondition
     }
 }
 
+#if UNITY_EDITOR
 [CustomPropertyDrawer(typeof(TileCondition))]
 public class TileConditionPropertyDrawer : PropertyDrawer
 {
@@ -83,3 +84,4 @@ public class TileConditionPropertyDrawer : PropertyDrawer
         return root;
     }
 }
+#endif

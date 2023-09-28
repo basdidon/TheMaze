@@ -11,23 +11,23 @@ public enum TileRules { ANY = 0, CONNECT = 1, NOT_CONNECT = 2 }
 [Serializable]
 public struct TileRulePicker
 {
-    public TileRules rule_n;
-    public TileRules rule_s;
-    public TileRules rule_w;
-    public TileRules rule_e;
+    [SerializeField] TileRules rule_n;
+    [SerializeField] TileRules rule_s;
+    [SerializeField] TileRules rule_w;
+    [SerializeField] TileRules rule_e;
 
     public bool IsMacth(TileConnection connection)
     {
-        if(!IsRuleMacth(rule_n, connection.isConnectN))
+        if(!IsRuleMacth(rule_n, connection.IsConnectN))
         {
             return false;
-        }else if(!IsRuleMacth(rule_w, connection.isConnectW))
+        }else if(!IsRuleMacth(rule_w, connection.IsConnectW))
         {
             return false;
-        }else if(!IsRuleMacth(rule_e, connection.isConnectE))
+        }else if(!IsRuleMacth(rule_e, connection.IsConnectE))
         {
             return false;
-        }else if(!IsRuleMacth(rule_s, connection.isConnectS))
+        }else if(!IsRuleMacth(rule_s, connection.IsConnectS))
         {
             return false;
         }
@@ -53,6 +53,7 @@ public struct TileRulePicker
     }
 }
 
+#if UNITY_EDITOR
 [CustomPropertyDrawer(typeof(TileRulePicker))]
 public class TileRulePickerPropotyDrawer : PropertyDrawer
 {
@@ -145,3 +146,4 @@ public class TileRulePickerPropotyDrawer : PropertyDrawer
         };
     }
 }
+#endif

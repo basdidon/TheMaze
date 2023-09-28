@@ -134,12 +134,12 @@ GameObject:
   - component: {fileID: 25874508}
   - component: {fileID: 25874507}
   m_Layer: 0
-  m_Name: MazeGenerater
+  m_Name: MazeGenerator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &25874507
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -155,12 +155,16 @@ MonoBehaviour:
   <GroundTileMap>k__BackingField: {fileID: 381596386}
   <PathTileMap>k__BackingField: {fileID: 77242065}
   <GroundTile>k__BackingField: {fileID: 11400000, guid: 52dcb930b0bdfc248b98f6e3e33f8525, type: 2}
+  <FinishTile>k__BackingField: {fileID: 11400000, guid: 3fdad34d614962c4a974b01cda276406, type: 2}
   <PathTile>k__BackingField: {fileID: 11400000, guid: 512b43c1d4f65ca439c57fb7c2718efb, type: 2}
   <MapRect>k__BackingField:
     x: 0
     y: 0
     width: 20
     height: 20
+  <StartAt>k__BackingField: {x: 0, y: 0, z: 0}
+  <EndAt>k__BackingField: {x: 0, y: 0, z: 0}
+  DefaultSprite: {fileID: 0}
 --- !u!4 &25874508
 Transform:
   m_ObjectHideFlags: 0
@@ -170,7 +174,7 @@ Transform:
   m_GameObject: {fileID: 25874506}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.6349599, y: -1.0355401, z: -0.004443691}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -251,7 +255,7 @@ TilemapRenderer:
   m_SortingLayer: 2
   m_SortingOrder: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
-  m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
+  m_ChunkCullingBounds: {x: 0, y: 0.00012207031, z: 0}
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 0
@@ -296,6 +300,65 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!1 &340646351
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 340646353}
+  - component: {fileID: 340646352}
+  m_Layer: 0
+  m_Name: SectionCreator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &340646352
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 340646351}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d665c75928c92343bd913054780dc81, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <GroundTileMap>k__BackingField: {fileID: 381596386}
+  <PathTileMap>k__BackingField: {fileID: 77242065}
+  <GroundTile>k__BackingField: {fileID: 11400000, guid: 52dcb930b0bdfc248b98f6e3e33f8525, type: 2}
+  <FinishTile>k__BackingField: {fileID: 11400000, guid: 3fdad34d614962c4a974b01cda276406, type: 2}
+  <PathTile>k__BackingField: {fileID: 11400000, guid: 512b43c1d4f65ca439c57fb7c2718efb, type: 2}
+  <MapRect>k__BackingField:
+    x: 0
+    y: 0
+    width: 10
+    height: 10
+  <StartAt>k__BackingField: {x: 0, y: 0, z: 0}
+  <EndAt>k__BackingField: {x: 0, y: 0, z: 0}
+  DefaultSprite: {fileID: 0}
+  <TowerFloor>k__BackingField: 2
+  <StairTile>k__BackingField: {fileID: 11400000, guid: 508bcd9b6f2d12c4090f3b7735b97bd1, type: 2}
+--- !u!4 &340646353
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 340646351}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 10.38828, y: 9.209748, z: 0.08905473}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &381596383
 GameObject:
   m_ObjectHideFlags: 0
@@ -607,3 +670,4 @@ SceneRoots:
   - {fileID: 519420032}
   - {fileID: 1857234501}
   - {fileID: 25874508}
+  - {fileID: 340646353}

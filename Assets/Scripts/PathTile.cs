@@ -3,12 +3,56 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using System.Linq;
+
+public struct CellData
+{
+    public int depth;
+    public TileConnection connection;
+    
+    public CellData SetDepth(int newDepth)
+    {
+        //Debug.Log($"{depth} -> {newDepth}");
+        
+        if (depth == -1 || newDepth < depth)
+        {
+            depth = newDepth;
+        }
+        return this;
+    }
+
+    public CellData SetConnectByDir(Vector3Int dir, bool value = true)
+    {
+        if (dir == Vector3Int.up)
+        {
+            connection.IsConnectN = value;
+        }
+        else if (dir == Vector3Int.down)
+        {
+            connection.IsConnectS = value;
+        }
+        else if (dir == Vector3Int.left)
+        {
+            connection.IsConnectW = value;
+        }
+        else if (dir == Vector3Int.right)
+        {
+            connection.IsConnectE = value;
+        }
+        else
+        {
+            throw new Exception("Unexpected value");
+        }
+
+        return this;
+    }
+}
 
 [CreateAssetMenu(menuName = "PathTile")]
 public class PathTile : Tile
 {
     Tilemap Tilemap { get; set; }
-    readonly Dictionary<Vector3Int, TileConnection> TileConnectionDictionary = new();
+    Dictionary<Vector3Int, CellData> CellDataDictionary { get; set; }
 
     [Header("DefaultSprite")]
     public Sprite DefaultSprite;
@@ -16,57 +60,9 @@ public class PathTile : Tile
     [Header("Condition")]
     [SerializeField] TileCondition[] TileConditions;
 
-    public void Initialize(Tilemap tilemap)
+    public void Initialize(Dictionary<Vector3Int, CellData> cellDataDict)
     {
-        Tilemap = tilemap;
-    }
-
-    public bool CreatePathNode(Vector3Int position)
-    {
-        if (TileConnectionDictionary.TryAdd(position, new()))
-        {
-            Tilemap.SetTile(position,this);
-            return true;
-        }
-        return false;
-    }
-
-    public void Connect(Vector3Int a, Vector3Int b)
-    {
-        Debug.Log($"connect {a} to {b}");
-        // is adjacent node
-        var AToB = b-a;
-        if (Mathf.Abs(AToB.x) + Mathf.Abs(AToB.y) != 1)
-            return;
-
-        TileConnectionDictionary[a] = SetConnectByDir(TileConnectionDictionary[a],b-a);
-        TileConnectionDictionary[b] = SetConnectByDir(TileConnectionDictionary[b],a-b);
-    }
-
-    public TileConnection SetConnectByDir(TileConnection connection,Vector3Int dir, bool value = true)
-    {
-        if (dir == Vector3Int.up)
-        {
-            connection.isConnectN = value;
-        }
-        else if (dir == Vector3Int.down)
-        {
-            connection.isConnectS = value;
-        }
-        else if (dir == Vector3Int.left)
-        {
-            connection.isConnectW = value;
-        }
-        else if (dir == Vector3Int.right)
-        {
-            connection.isConnectE = value;
-        }
-        else
-        {
-            throw new Exception("Unexpected value");
-        }
-
-        return connection;
+        CellDataDictionary = cellDataDict;
     }
 
     public override void GetTileData(Vector3Int position, ITilemap tilemap, ref TileData tileData)
@@ -75,11 +71,11 @@ public class PathTile : Tile
 
         tileData.sprite = DefaultSprite;
 
-        if(TileConnectionDictionary.TryGetValue(position,out TileConnection connection))
+        if(CellDataDictionary.TryGetValue(position,out CellData cellData))
         {
             foreach (var tile in TileConditions)
             {
-                if (tile.TryGetSprite(connection, out Sprite sprite))
+                if (tile.TryGetSprite(cellData.connection, out Sprite sprite))
                 {
                     tileData.sprite = sprite;
                     break;
@@ -88,6 +84,7 @@ public class PathTile : Tile
         }
     }
 }
+
 /*
 #if UNITY_EDITOR
 
