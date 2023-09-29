@@ -21,9 +21,6 @@ public class MazeGenerator : MonoBehaviour
 
     readonly Dictionary<Vector3Int, CellData> CellDataDictionary = new();
 
-    [Header("DefaultSprite")]
-    public Sprite DefaultSprite;
-
     public KeyValuePair<Vector3Int, CellData> MostDepthCell => CellDataDictionary.OrderByDescending(pair => pair.Value.depth).First();
 
 
@@ -96,10 +93,12 @@ public class MazeGenerator : MonoBehaviour
 
     public void CreateMaze()
     {
+        // reset value
         GroundTileMap.SetTile(StartAt, GroundTile);
         GroundTileMap.SetTile(EndAt, GroundTile);
         ResetMap(MapRect,StartAt);
 
+        // start create
         visitedList = new() { StartAt };
         finishList = new();
 
