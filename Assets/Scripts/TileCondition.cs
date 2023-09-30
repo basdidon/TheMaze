@@ -1,9 +1,9 @@
+using System;
 using UnityEditor;
-using UnityEngine.UIElements;
-using UnityEngine.Tilemaps;
 using UnityEditor.UIElements;
 using UnityEngine;
-using System;
+using UnityEngine.Tilemaps;
+using UnityEngine.UIElements;
 
 [Serializable]
 public class TileCondition
@@ -44,14 +44,15 @@ public class TileConditionPropertyDrawer : PropertyDrawer
         VisualElement objectFieldDisplay = root.Q<VisualElement>(null, new string[] { ObjectField.objectUssClassName });
         Image objectFieldDisplayIcon = objectFieldDisplay.Q<Image>();
         VisualElement objectFieldInput = root.Q<VisualElement>(null, new string[] { ObjectField.inputUssClassName });
-        
-        Image spritePreview = new ();
+
+        Image spritePreview = new();
         objectFieldDisplay.Insert(1, spritePreview);
         spritePreview.pickingMode = PickingMode.Ignore;
-        
+
         ObjectField spriteObjectField = root.Q<ObjectField>();
-        spriteObjectField.RegisterValueChangedCallback((ev)=> {
-            if(ev.newValue is Sprite sprite)
+        spriteObjectField.RegisterValueChangedCallback((ev) =>
+        {
+            if (ev.newValue is Sprite sprite)
             {
                 objectFieldDisplayIcon.AddToClassList("hidden");
                 spritePreview.sprite = sprite;
@@ -61,7 +62,7 @@ public class TileConditionPropertyDrawer : PropertyDrawer
                 objectFieldDisplayIcon.AddToClassList("hidden");
                 spritePreview.sprite = tile.sprite;
             }
-            else if(ev.newValue == null)
+            else if (ev.newValue == null)
             {
                 spritePreview.sprite = null;
                 objectFieldDisplayIcon.RemoveFromClassList("hidden");

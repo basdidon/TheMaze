@@ -1,11 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using UnityEngine.Tilemaps;
-using UnityEditor;
-
-public class MazeGenerator : MonoBehaviour
+/*
+public sealed class MazeGenerator : MonoBehaviour
 {
     [field: SerializeField] public Tilemap GroundTileMap { get; private set; }
     [field: SerializeField] public Tilemap PathTileMap { get; private set; }
@@ -20,9 +14,7 @@ public class MazeGenerator : MonoBehaviour
     [field: SerializeField] public Vector3Int EndAt {get; private set;}
 
     readonly Dictionary<Vector3Int, CellData> CellDataDictionary = new();
-
     public KeyValuePair<Vector3Int, CellData> MostDepthCell => CellDataDictionary.OrderByDescending(pair => pair.Value.depth).First();
-
 
     public bool CreatePathNode(Vector3Int position)
     {
@@ -85,8 +77,6 @@ public class MazeGenerator : MonoBehaviour
             }
         }
     }
-
-
 
     List<Vector3Int> visitedList;
     List<Vector3Int> finishList;
@@ -180,4 +170,4 @@ public class MazeGeneratorEditor: Editor
         }
     }
 }
-#endif
+#endif*/

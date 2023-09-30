@@ -1,10 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using System;
 using UnityEditor;
+using UnityEngine;
 using UnityEngine.UIElements;
-using UnityEditor.UIElements;
 
 public enum TileRules { ANY = 0, CONNECT = 1, NOT_CONNECT = 2 }
 
@@ -18,33 +15,36 @@ public struct TileRulePicker
 
     public bool IsMacth(TileConnection connection)
     {
-        if(!IsRuleMacth(rule_n, connection.IsConnectN))
+        if (!IsRuleMacth(rule_n, connection.IsConnectN))
         {
             return false;
-        }else if(!IsRuleMacth(rule_w, connection.IsConnectW))
+        }
+        else if (!IsRuleMacth(rule_w, connection.IsConnectW))
         {
             return false;
-        }else if(!IsRuleMacth(rule_e, connection.IsConnectE))
+        }
+        else if (!IsRuleMacth(rule_e, connection.IsConnectE))
         {
             return false;
-        }else if(!IsRuleMacth(rule_s, connection.IsConnectS))
+        }
+        else if (!IsRuleMacth(rule_s, connection.IsConnectS))
         {
             return false;
         }
         return true;
     }
 
-    bool IsRuleMacth(TileRules tileRules,bool isConnect)
+    bool IsRuleMacth(TileRules tileRules, bool isConnect)
     {
-        if(tileRules == TileRules.ANY)
-        {
-            return true;
-        }    
-        else if(tileRules == TileRules.CONNECT && isConnect)
+        if (tileRules == TileRules.ANY)
         {
             return true;
         }
-        else if(tileRules == TileRules.NOT_CONNECT && !isConnect)
+        else if (tileRules == TileRules.CONNECT && isConnect)
+        {
+            return true;
+        }
+        else if (tileRules == TileRules.NOT_CONNECT && !isConnect)
         {
             return true;
         }
@@ -64,7 +64,7 @@ public class TileRulePickerPropotyDrawer : PropertyDrawer
     {
         var assetTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/Editor/UiDocs/TileRulePickerEditor.uxml");
         var root = assetTree.Instantiate();
-        CreateRulePickers(root,property);
+        CreateRulePickers(root, property);
 
         return root;
     }

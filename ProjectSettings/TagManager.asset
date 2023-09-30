@@ -44,9 +44,9 @@ TagManager:
   - name: Ground
     uniqueID: 3163593541
     locked: 0
-  - name: Path
-    uniqueID: 1361156295
-    locked: 0
   - name: Section
     uniqueID: 649093857
+    locked: 0
+  - name: Path
+    uniqueID: 1361156295
     locked: 0

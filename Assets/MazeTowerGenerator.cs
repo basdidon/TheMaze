@@ -1,48 +1,45 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using System;
-using System.Linq;
 using Random = UnityEngine.Random;
 
 [Serializable]
 public class Floor
 {
-    RectInt MapRect { get; set; }
+    public RectInt FloorRect { get; }
     [field: SerializeField] public int NumSection { get; private set; }
-    [SerializeField] int?[,] sectionMap;
+    Dictionary<Vector2Int, int> SectionMap { get; }
+    Dictionary<Vector2Int, CellData> CellDataMap { get; }
+    public KeyValuePair<Vector2Int, CellData> MostDepthCell => CellDataMap.OrderByDescending(pair => pair.Value.depth).First();
 
-    readonly Dictionary<Vector3Int, CellData> CellDataDictionary = new();
-    public KeyValuePair<Vector3Int, CellData> MostDepthCell => CellDataDictionary.OrderByDescending(pair => pair.Value.depth).First();
-
-    public Floor(RectInt mapSize,int numSection)
+    public Floor(RectInt floorRect, int numSection)
     {
-        MapRect = mapSize;
-        NumSection = numSection;
+        FloorRect = floorRect;
+        NumSection = numSection > 0? numSection:1;
 
-        sectionMap = new int?[MapRect.width, MapRect.height];
-        //GenerateSectionMap(GenerateNoise());
+        SectionMap = new();
+        CellDataMap = new();
+
         PlaceSectionRoot();
     }
 
-    List<Vector3Int> visitedList;
-    List<Vector3Int> finishList;
+    List<Vector2Int> visitedList;
+    List<Vector2Int> finishList;
 
     void PlaceSectionRoot()
     {
-        Vector3Int[] StartAts = new Vector3Int[NumSection];
+        Vector2Int[] StartAts = new Vector2Int[NumSection];
         for (int i = 0; i < NumSection; i++)
         {
             Vector2Int randPos;
             do
             {
-                randPos = new(Random.Range(MapRect.xMin, MapRect.xMax), Random.Range(MapRect.yMin, MapRect.yMax));
-            } while (sectionMap[randPos.x, randPos.y] != null);
-
-            sectionMap[randPos.x, randPos.y] = i;
-            StartAts[i] = new Vector3Int(randPos.x,randPos.y);
+                randPos = new(Random.Range(FloorRect.xMin, FloorRect.xMax), Random.Range(FloorRect.yMin, FloorRect.yMax));
+            } while (!SectionMap.TryAdd(randPos,i));
+            StartAts[i] = randPos;
         }
 
         // start create
@@ -51,45 +48,91 @@ public class Floor
 
         while (visitedList.Count > 0)
         {
-            var currentPos = visitedList.Last();
-            if (RandomUnvisitNode(currentPos, out Vector3Int result))
+            Vector2Int toSearchCell;
+
+            if (NumSection > 1)
             {
-                Connect(currentPos, result);
+                var randSection = Random.Range(0, NumSection);
+                toSearchCell = Vector2Int.zero;
+                //if (visitedList.any(cell=> SectionMap.v))
+                
+                
+                // ***** endless loop below ****************//
+                
+                
+                /*
+                toSearchCell = visitedList.LastOrDefault(cell =>
+                {
+                    if (SectionMap.TryGetValue(cell, out int value))
+                    {
+                        return value == randSection;
+                    }
+                    return false;
+                });*/
+            }
+            else
+            {
+                toSearchCell = visitedList.Last();
+            }
+
+            if (RandomUnvisitNode(toSearchCell, out Vector2Int result))
+            {
+                Connect(toSearchCell, result);
                 visitedList.Add(result);
             }
             else
             {
-                visitedList.Remove(currentPos);
-                finishList.Add(currentPos);
+                visitedList.Remove(toSearchCell);
+                finishList.Add(toSearchCell);
             }
         }
     }
-    public int? GetSection(Vector2Int cellPos) => sectionMap[cellPos.x,cellPos.y];
 
-    public void Connect(Vector3Int from, Vector3Int to)
+    public bool TryGetCellData(Vector2Int cellPos, out CellData cellData) => CellDataMap.TryGetValue(cellPos, out cellData);
+    public bool TryGetSection(Vector2Int cellPos,out int sectionIndex) => SectionMap.TryGetValue(cellPos,out sectionIndex);
+
+    public void Connect(Vector2Int from, Vector2Int to)
     {
         var dir = to - from;
         if (Mathf.Abs(dir.x) + Mathf.Abs(dir.y) != 1)
             return;
 
-        var fromCellData = CellDataDictionary[from];
-        var toCellData = CellDataDictionary[to];
+        if(SectionMap.TryGetValue(from,out int value))
+        {
+            SectionMap.Add(to, value);
+        }
 
-        CellDataDictionary[from] = fromCellData.SetConnectByDir(to - from);
-        CellDataDictionary[to] = toCellData.SetConnectByDir(from - to).SetDepth(fromCellData.depth + 1);
+        if (!CellDataMap.TryGetValue(from, out CellData fromCellData))
+        {
+            fromCellData = new();
+            CellDataMap.Add(from, fromCellData);
+        }
+
+        if (!CellDataMap.TryGetValue(to, out CellData toCellData))
+        {
+            toCellData = new();
+            CellDataMap.Add(to, toCellData);
+        }
+
+        CellDataMap[from] = fromCellData.SetConnectByDir(to - from);
+        fromCellData.depth ??= 1;
+        if(fromCellData.depth is int fromDepth)
+        {
+            CellDataMap[to] = toCellData.SetConnectByDir(from - to).SetDepth(fromDepth + 1);
+        }
     }
 
-    readonly Vector3Int[] neighborDirs = new Vector3Int[]
+    readonly Vector2Int[] neighborDirs = new Vector2Int[]
     {
-        Vector3Int.up,
-        Vector3Int.down,
-        Vector3Int.left,
-        Vector3Int.right,
+        Vector2Int.up,
+        Vector2Int.down,
+        Vector2Int.left,
+        Vector2Int.right,
     };
 
-    bool RandomUnvisitNode(Vector3Int pos, out Vector3Int result)
+    bool RandomUnvisitNode(Vector2Int pos, out Vector2Int result)
     {
-        result = Vector3Int.zero;
+        result = Vector2Int.zero;
         var nodes = neighborDirs.Select(dir => dir + pos)
             .Where(pos => !IsOutOfBound(pos) && !visitedList.Contains(pos) && !finishList.Contains(pos))
             .ToArray();
@@ -101,200 +144,184 @@ public class Floor
         return true;
     }
 
-    bool IsOutOfBound(Vector3Int pos)
+    bool IsOutOfBound(Vector2Int pos)
     {
-        if (pos.x < MapRect.xMin || pos.x >= MapRect.xMax)
+        if (pos.x < FloorRect.xMin || pos.x >= FloorRect.xMax)
             return true;
-        if (pos.y < MapRect.yMin || pos.y >= MapRect.yMax)
+        if (pos.y < FloorRect.yMin || pos.y >= FloorRect.yMax)
             return true;
 
         return false;
     }
-    /*
-    public float[,] GenerateNoise()
-    {
-        float[,] noiseMap = new float[MapRect.width,MapRect.height];
-        
-        for(int x = 0; x < noiseMap.GetLength(0); x++)
-        {
-            for (int y = 0; y < noiseMap.GetLength(1); y++)
-            {
-                noiseMap[x, y] = Mathf.Clamp01(Mathf.PerlinNoise(x / (float) MapRect.width, y / (float) MapRect.height));
-                Debug.Log($" noiseMap[{x},{y}] : {noiseMap[x, y]}");
-            }
-        }
-
-        return noiseMap;
-    }
-
-
-    void GenerateSectionMap(float[,] noiseMap)
-    {
-        // Random Section Size
-        int[] sectionsSize = new int[NumSection];
-        for (int i = 0; i < sectionsSize.Length; i++)
-        {
-            sectionsSize[i] = Random.Range(1, 4);
-        }
-
-        int sum = sectionsSize.Sum();
-        float[] normalizedArr = new float[NumSection];
-        for (int i = 0; i < normalizedArr.Length; i++)
-        {
-            normalizedArr[i] = (float) sectionsSize[i] / sum;
-            Debug.Log($"{normalizedArr[i]} = {sectionsSize[i]} / {sum}");
-        }
-
-        float[] cumulativeArr = new float[NumSection];
-        for (int i = 0; i < cumulativeArr.Length; i++)
-        {
-            if (i == 0)
-            {
-                cumulativeArr[i] = normalizedArr[i] ;
-            }
-            else
-            {
-                cumulativeArr[i] = cumulativeArr[i - 1] + normalizedArr[i];
-            }
-
-            Debug.Log($"cumulativeArr[{i}] : {cumulativeArr[i]}");
-        }
-
-        sectionMap = new int?[MapRect.width,MapRect.height];
-        // set section to map
-        for (int x = 0; x < sectionMap.GetLength(0); x++)
-        {
-            for (int y = 0; y < sectionMap.GetLength(1); y++)
-            {
-                for(int i = 0; i < cumulativeArr.Length; i++)
-                {
-                    if(noiseMap[x,y] < cumulativeArr[i])
-                    {
-                        sectionMap[x, y] = i;
-                        break;
-                    }
-                }
-            }
-        }
-    }*/
 }
 
-public class MazeTowerGenerator : MazeGenerator
+public class MazeTowerGenerator : MonoBehaviour, IMazePath
 {
+    // TileMaps
+    [field: SerializeField] public Tilemap GroundTileMap { get; private set; }
+    [field: SerializeField] public Tilemap PathTileMap { get; private set; }
+    [field: SerializeField] public Tilemap SectionTileMap { get; private set; }
+
+    // Tiles
+    [field: SerializeField] public Tile GroundTile { get; private set; }
+    [field: SerializeField] public Tile FinishTile { get; private set; }
+    [field: SerializeField] public Tile SectionTile { get; private set; }
+    [field: SerializeField]
+    public Color[] SectionColors { get; private set; } = new Color[] {
+        Color.white,
+        Color.blue,
+        Color.red,
+        Color.gray,
+    };
+    [field: SerializeField] public PathTile PathTile { get; private set; }
+
+    // Floor Properties
     [field: SerializeField] int TowerFloor { get; set; }
+    [field: SerializeField] int FloorWidth { get; set; } = 20;
+    [field: SerializeField] int FloorHeight { get; set; } = 20;
+    [field: SerializeField] int FloorOffset { get; set; } = 1;
     [field: SerializeField] List<Floor> Floors { get; set; }
-    [field: SerializeField] Tile StairTile { get; set; }
-    [field: SerializeField] int SectionCount { get; set; }
-    [field: SerializeField] int?[] FloorSectionOrder { get; set; }
 
-    [field: SerializeField] Tilemap SectionTileMap { get; set; }
-    [field: SerializeField] Tile section1Tile { get; set; }
-    [field: SerializeField] Tile section2Tile { get; set; }
-
-    public void RandomFloorSectionOrder()
+    private void Start()
     {
-        if (SectionCount < TowerFloor)
-            SectionCount = TowerFloor;
-
-        FloorSectionOrder = new int?[SectionCount];
-
-        for (int i = 0; i < TowerFloor; i++)
-        {
-            int rand;
-
-            do
-            {
-                rand = Random.Range(0, SectionCount);
-            } while (FloorSectionOrder[rand] != null);
-
-            FloorSectionOrder[rand] = i;
-        }
-
-        for (int i = 0; i < SectionCount; i++)
-        {
-            if (FloorSectionOrder[i] != null)
-                continue;
-
-            FloorSectionOrder[i] = Random.Range(0, TowerFloor);
-        }
-
-        Debug.Log("--------------");
-        foreach (var value in FloorSectionOrder)
-        {
-            Debug.Log(value);
-        }
+        PathTile.Initialize(this);
     }
 
-    public Vector3Int GetWorldPos(Vector3Int floorPos, int flootIndex) => (Vector3Int.right * flootIndex * (MapRect.xMax + 1)) + floorPos;
-
-    public override void PlaceGroundFloor()
+    // Implement IMazePath
+    public bool TryGetTileConection(Vector3Int cellPos,out TileConnection connection)
     {
-        for (int i = 0; i < TowerFloor; i++)
+        connection = new();
+
+        foreach (var floor in Floors)
         {
-            PlaceGroundFloor(GetWorldPos(Vector3Int.zero,i));
-            Floors.Add(new(MapRect, 2));
+            // inside rect handle
+            if(floor.TryGetCellData((Vector2Int)cellPos,out CellData cellData))
+            {
+                connection = cellData.connection;
+                return true;
+            }
         }
 
-        for(int i =0; i < TowerFloor; i++)
+        return false;
+    }
+
+    void ClearTileMaps()
+    {
+        GroundTileMap.ClearAllTiles();
+        SectionTileMap.ClearAllTiles();
+        PathTileMap.ClearAllTiles();
+    }
+
+    public void PlaceGroundFloor()
+    {
+        ClearTileMaps();
+        Floors.Clear();
+
+        for (int i = 0; i < TowerFloor; i++)
         {
-            for (int x = MapRect.xMin; x < MapRect.xMax; x++)
+            var floor = new Floor(new RectInt(i * (FloorWidth + FloorOffset), 0, FloorWidth, FloorHeight), 3);
+            Floors.Add(floor);
+
+            foreach (var rectPos in floor.FloorRect.allPositionsWithin)
             {
-                for (int y = MapRect.yMin; y < MapRect.yMax; y++)
+                Vector3Int cellPos = (Vector3Int) rectPos;
+
+                // Ground
+                GroundTileMap.SetTile(cellPos, GroundTile);
+
+                if (floor.TryGetSection(rectPos, out int sectionIdx))
                 {
-                    var cellPos = new Vector3Int(x, y);
-                    //Debug.Log(Floors[i].GetSection(new Vector2Int(cellPos.x, cellPos.y)));
-                    Tile tile = Floors[i].GetSection(new Vector2Int(cellPos.x, cellPos.y)) switch
+                    Tile tile = SectionTile;
+                    if(sectionIdx < SectionColors.Length)
                     {
-                        null => null,
-                        0 => section1Tile,
-                        1 => section2Tile,
-                        _ => null,
-                    };
-                    SectionTileMap.SetTile(cellPos + GetWorldPos(Vector3Int.zero,i), tile);
+                        tile.color = SectionColors[sectionIdx];
+                    }
+                    SectionTileMap.SetTile(cellPos, tile);
                 }
+
+                if (floor.TryGetCellData(rectPos, out CellData cellData))
+                {
+                    PathTileMap.SetTile(cellPos, PathTile);
+                }
+
             }
+            
         }
     }
+    /*
+public void RandomFloorSectionOrder()
+{
+   if (SectionCount < TowerFloor)
+       SectionCount = TowerFloor;
 
-    public void RandomCreateStair(int floorIndex,int otherFloorIndex)
-    {
-        int lowerFloorIndex;
-        int upperFloorIndex;
-        
-        if (floorIndex > otherFloorIndex)
-        {
-            lowerFloorIndex = otherFloorIndex;
-            upperFloorIndex = floorIndex;
-        }
-        else if(floorIndex < otherFloorIndex)
-        {
-            lowerFloorIndex = floorIndex;
-            upperFloorIndex = otherFloorIndex;
-        }
-        else  // equals
-        {
-            return;
-        }
+   FloorSectionOrder = new int?[SectionCount];
 
-        Vector3Int randCellPos;
-        do
-        {
-            randCellPos = new(UnityEngine.Random.Range(MapRect.xMin, MapRect.xMax), Random.Range(MapRect.yMin, MapRect.yMax), 0);
-        } 
-        while (randCellPos == StartAt);
+   for (int i = 0; i < TowerFloor; i++)
+   {
+       int rand;
 
-        for(int i = lowerFloorIndex; i <= upperFloorIndex - lowerFloorIndex; i++)
-        {
-            if (i == upperFloorIndex || i == lowerFloorIndex)
-            {
-                GroundTileMap.SetTile(GetWorldPos(randCellPos, i), StairTile);
-            }
-            else
-            {
-                GroundTileMap.SetTile(GetWorldPos(randCellPos, i), null);
-            }
-        }
-    }
+       do
+       {
+           rand = Random.Range(0, SectionCount);
+       } while (FloorSectionOrder[rand] != null);
+
+       FloorSectionOrder[rand] = i;
+   }
+
+   for (int i = 0; i < SectionCount; i++)
+   {
+       if (FloorSectionOrder[i] != null)
+           continue;
+
+       FloorSectionOrder[i] = Random.Range(0, TowerFloor);
+   }
+
+   Debug.Log("--------------");
+   foreach (var value in FloorSectionOrder)
+   {
+       Debug.Log(value);
+   }
+}
+public void RandomCreateStair(int floorIndex, int otherFloorIndex)
+{
+   int lowerFloorIndex;
+   int upperFloorIndex;
+
+   if (floorIndex > otherFloorIndex)
+   {
+       lowerFloorIndex = otherFloorIndex;
+       upperFloorIndex = floorIndex;
+   }
+   else if (floorIndex < otherFloorIndex)
+   {
+       lowerFloorIndex = floorIndex;
+       upperFloorIndex = otherFloorIndex;
+   }
+   else  // equals
+   {
+       return;
+   }
+
+   Vector3Int randCellPos;
+   do
+   {
+       randCellPos = new(UnityEngine.Random.Range(MapRect.xMin, MapRect.xMax), Random.Range(MapRect.yMin, MapRect.yMax), 0);
+   }
+   while (randCellPos == StartAt);
+
+   for (int i = lowerFloorIndex; i <= upperFloorIndex - lowerFloorIndex; i++)
+   {
+       if (i == upperFloorIndex || i == lowerFloorIndex)
+       {
+           GroundTileMap.SetTile(GetWorldPos(randCellPos, i), StairTile);
+       }
+       else
+       {
+           GroundTileMap.SetTile(GetWorldPos(randCellPos, i), null);
+       }
+   }
+}
+*/
 }
 
 #if UNITY_EDITOR
@@ -313,21 +340,21 @@ public class HirachicalMazeGeneratorEditor : Editor
         {
             towerMazeGenerator.PlaceGroundFloor();
         }
-
+        /*
         if (GUILayout.Button("RamdomSectionOrder"))
         {
-            towerMazeGenerator.RandomFloorSectionOrder();
+            //towerMazeGenerator.RandomFloorSectionOrder();
         }
 
         if (GUILayout.Button("RandomStair"))
         {
-            towerMazeGenerator.RandomCreateStair(0,2);
+            //towerMazeGenerator.RandomCreateStair(0,2);
         }
 
         if (GUILayout.Button("Generate Maze"))
         {
-            towerMazeGenerator.CreateMaze();
-        }
+            //towerMazeGenerator.CreateMaze();
+        }*/
     }
 }
 #endif

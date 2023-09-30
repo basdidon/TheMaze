@@ -1,8 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using System;
 using UnityEditor;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 [Serializable]
@@ -13,7 +11,7 @@ public struct TileConnection
     [SerializeField] public bool IsConnectW { get; set; }
     [SerializeField] public bool IsConnectE { get; set; }
 
-    public TileConnection(bool n = false,bool w = false, bool e = false, bool s = false)
+    public TileConnection(bool n = false, bool w = false, bool e = false, bool s = false)
     {
         IsConnectN = n;
         IsConnectW = w;
@@ -63,7 +61,7 @@ public class TileConnectionPropotyDrawer : PropertyDrawer
 
     readonly string[] rulePickerKeywords = new string[] { "n", "w", string.Empty, "e", "s" };
 
-    void CreateTileConnectionFields(VisualElement root,SerializedProperty property)
+    void CreateTileConnectionFields(VisualElement root, SerializedProperty property)
     {
         var topRow = root.Q<VisualElement>("rule-picker-top-row");
         var middleRow = root.Q<VisualElement>("rule-picker-middle-row");

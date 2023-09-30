@@ -1,41 +1,37 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using System.Linq;
 
 public struct CellData
 {
-    public int depth;
+    public int? depth;
+    public int? SectionId { get; set; }
     public TileConnection connection;
-    
+
     public CellData SetDepth(int newDepth)
     {
-        //Debug.Log($"{depth} -> {newDepth}");
-        
-        if (depth == -1 || newDepth < depth)
+        if (depth == null || newDepth < depth)
         {
             depth = newDepth;
         }
         return this;
     }
 
-    public CellData SetConnectByDir(Vector3Int dir, bool value = true)
+    public CellData SetConnectByDir(Vector2Int dir, bool value = true)
     {
-        if (dir == Vector3Int.up)
+        if (dir == Vector2Int.up)
         {
             connection.IsConnectN = value;
         }
-        else if (dir == Vector3Int.down)
+        else if (dir == Vector2Int.down)
         {
             connection.IsConnectS = value;
         }
-        else if (dir == Vector3Int.left)
+        else if (dir == Vector2Int.left)
         {
             connection.IsConnectW = value;
         }
-        else if (dir == Vector3Int.right)
+        else if (dir == Vector2Int.right)
         {
             connection.IsConnectE = value;
         }
@@ -46,13 +42,29 @@ public struct CellData
 
         return this;
     }
+
+    public CellData SetConnectByDir(Vector3Int dir, bool value = true)
+    {
+        return SetConnectByDir((Vector2Int)dir, value);
+    }
+
+    internal CellData SetDepth(int? v)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+public interface IMazePath
+{
+    // put PathTile.Initialize(this) to start
+    PathTile PathTile { get; }
+    bool TryGetTileConection(Vector3Int cellPos, out TileConnection connection);
 }
 
 [CreateAssetMenu(menuName = "PathTile")]
 public class PathTile : Tile
 {
-    Tilemap Tilemap { get; set; }
-    Dictionary<Vector3Int, CellData> CellDataDictionary { get; set; }
+    IMazePath MazePath { get; set; }
 
     [Header("DefaultSprite")]
     public Sprite DefaultSprite;
@@ -60,9 +72,9 @@ public class PathTile : Tile
     [Header("Condition")]
     [SerializeField] TileCondition[] TileConditions;
 
-    public void Initialize(Dictionary<Vector3Int, CellData> cellDataDict)
+    public void Initialize(IMazePath mazePath)
     {
-        CellDataDictionary = cellDataDict;
+        MazePath = mazePath;
     }
 
     public override void GetTileData(Vector3Int position, ITilemap tilemap, ref TileData tileData)
@@ -71,11 +83,11 @@ public class PathTile : Tile
 
         tileData.sprite = DefaultSprite;
 
-        if(CellDataDictionary.TryGetValue(position,out CellData cellData))
+        foreach (var tile in TileConditions)
         {
-            foreach (var tile in TileConditions)
+            if (MazePath.TryGetTileConection(position, out TileConnection connection))
             {
-                if (tile.TryGetSprite(cellData.connection, out Sprite sprite))
+                if (tile.TryGetSprite(connection, out Sprite sprite))
                 {
                     tileData.sprite = sprite;
                     break;
