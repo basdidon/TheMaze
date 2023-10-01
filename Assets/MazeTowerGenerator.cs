@@ -106,9 +106,10 @@ public class MazeTowerGenerator : MonoBehaviour, IMazePath
     }
 
     // all sections in same localPos
+    /*
     public HashSet<Section> GetSectionsByLocalPos(Vector2Int localPos)=> floors.Select(floor => floor.GetSectionByLocalPos(localPos)).ToHashSet();
     public HashSet<Section> GetSectionsByLocalPosButOneWayCell(Vector2Int localPos)=> floors.Where(floor=> floor.IsOneWayCell(localPos)).Select(floor=> floor.GetSectionByLocalPos(localPos)).ToHashSet();
-    
+    */
     public void DebugSectionsConnectable()
     {
         foreach(var floor in floors)
@@ -116,7 +117,7 @@ public class MazeTowerGenerator : MonoBehaviour, IMazePath
             foreach(var section in floor.Sections)
             {
                 Debug.Log($"# {section}");
-                foreach (var connectableSection in section.GetConnectableSection())
+                foreach (var connectableSection in section.ConnectableSection)
                 {
                     Debug.Log($"--- {connectableSection}");
                 }
@@ -131,9 +132,10 @@ public class MazeTowerGenerator : MonoBehaviour, IMazePath
             foreach (var section in floor.Sections)
             {
                 Debug.Log($"# {section}");
-                foreach (var connectableSection in section.OneWayCells)
+                foreach (var connectableSection in section.OneWayConnectableSection)
                 {
-                    Debug.Log($"--- {connectableSection}");
+                    Debug.Log($"--- {connectableSection} ({section.GetOneWayConnectableCells(connectableSection).Count()})");
+                    
                 }
 
             }

@@ -10,8 +10,12 @@ public class Section
 {
     Floor Floor { get; }
     MazeTowerGenerator Maze => Floor.Maze;
-    List<Vector2Int> sectionCells;
+
+    readonly List<Vector2Int> sectionCells;
     public IReadOnlyList<Vector2Int> SectionCells => sectionCells;
+    public IReadOnlyList<Vector2Int> LocalSectionCells => SectionCells.Select(cell => Floor.WorldToLocalPos(cell)).ToList();
+    public IEnumerable<Vector2Int> OneWayCells => Floor.OneWayCells.Where(cellPos=>IsContain(cellPos));
+    public IEnumerable<Vector2Int> LocalOneWayCells => OneWayCells.Select(cell => Floor.WorldToLocalPos(cell));
 
     public Section(Floor floor)
     {
@@ -22,24 +26,14 @@ public class Section
     public void AddCell(Vector2Int cellPos) => sectionCells.Add(cellPos);
     public bool IsContain(Vector2Int cellPos) => sectionCells.Contains(cellPos);
 
-    public HashSet<Section> GetConnectableSection()
-    {
-        //var set = OthersFloor.Where(floor=>floor.GetSectionByLocalPos())
-        var set = sectionCells.Select(cellPos => Maze.GetSectionsByLocalPos(Floor.WorldToLocalPos(cellPos)))
-            .Aggregate(new HashSet<Section>(), (acc, set) => { 
-                acc.UnionWith(set); 
-                return acc;
-            });
+    public IEnumerable<Section> ConnectableSection => OtherFloorSections.Where(section => LocalSectionCells.Intersect(section.LocalSectionCells).Any());
+    public IEnumerable<Section> OneWayConnectableSection => OtherFloorSections.Where(section => GetOneWayConnectableCells(section).Any());
 
-        set.Remove(this);
-
-        return set;
-    }
+    public IEnumerable<Vector2Int> GetOneWayConnectableCells(Section section) => LocalOneWayCells.Intersect(section.LocalOneWayCells);
 
     public IEnumerable<Floor> OthersFloor => Maze.Floors.Where(floor => floor != Floor);
-    public IEnumerable<Section> AllSectionsInOtherFloor => OthersFloor.SelectMany(floor => floor.Sections);
+    public IEnumerable<Section> OtherFloorSections => OthersFloor.SelectMany(floor => floor.Sections);
 
-    public IEnumerable<Vector2Int> OneWayCells => Floor.OneWayCells.Where(cellPos=>IsContain(cellPos));
 
     public override string ToString() => $"F: {Floor.GetFloorIndex()} ,S: {Floor.GetSectionIndex(this)}";
 }
@@ -76,12 +70,10 @@ public class Floor
         PlaceSectionRoot();
     }
 
-
     public int GetFloorIndex() => Maze.GetFloorIndex(this);
     public int GetSectionIndex(Section section) => sections.IndexOf(section);
 
     Section GetSection(Vector2Int cellPos) => sections.FirstOrDefault(section => section.IsContain(cellPos));
-    public Section GetSectionByLocalPos(Vector2Int localPos) => GetSection(LocalToWorldPos(localPos));
 
     /// <returns> index of <c>Section</c> on <c>Floor</c>,or -1 if the element is not found.</returns>
     public int GetLocalSectionIdx(Vector2Int cellPos) => sections.FindIndex(section => section.IsContain(cellPos));
@@ -214,10 +206,4 @@ public class Floor
     }
 
     public IEnumerable<Vector2Int> OneWayCells => CellDataMap.Where(pair => pair.Value.IsOneWayCell).Select(pair => pair.Key);
-    public bool IsOneWayCell(Vector2Int localPos) {
-        if (!CellDataMap.TryGetValue(LocalToWorldPos(localPos), out CellData cellData))
-            return false;
-
-        return cellData.IsOneWayCell;
-    } 
 }
