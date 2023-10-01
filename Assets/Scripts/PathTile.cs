@@ -2,58 +2,6 @@ using System;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public struct CellData
-{
-    public int? depth;
-    public int? SectionId { get; set; }
-    public TileConnection connection;
-
-    public CellData SetDepth(int newDepth)
-    {
-        if (depth == null || newDepth < depth)
-        {
-            depth = newDepth;
-        }
-        return this;
-    }
-
-    public CellData SetConnectByDir(Vector2Int dir, bool value = true)
-    {
-        if (dir == Vector2Int.up)
-        {
-            connection.IsConnectN = value;
-        }
-        else if (dir == Vector2Int.down)
-        {
-            connection.IsConnectS = value;
-        }
-        else if (dir == Vector2Int.left)
-        {
-            connection.IsConnectW = value;
-        }
-        else if (dir == Vector2Int.right)
-        {
-            connection.IsConnectE = value;
-        }
-        else
-        {
-            throw new Exception("Unexpected value");
-        }
-
-        return this;
-    }
-
-    public CellData SetConnectByDir(Vector3Int dir, bool value = true)
-    {
-        return SetConnectByDir((Vector2Int)dir, value);
-    }
-
-    internal CellData SetDepth(int? v)
-    {
-        throw new NotImplementedException();
-    }
-}
-
 public interface IMazePath
 {
     // put PathTile.Initialize(this) to start
@@ -85,6 +33,11 @@ public class PathTile : Tile
 
         foreach (var tile in TileConditions)
         {
+            //Debug.Log(MazePath?.GetType());
+
+            if (MazePath == null)
+                return;
+
             if (MazePath.TryGetTileConection(position, out TileConnection connection))
             {
                 if (tile.TryGetSprite(connection, out Sprite sprite))
@@ -93,6 +46,7 @@ public class PathTile : Tile
                     break;
                 }
             }
+            
         }
     }
 }
