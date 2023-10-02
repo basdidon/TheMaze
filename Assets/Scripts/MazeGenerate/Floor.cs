@@ -4,15 +4,20 @@ using UnityEngine;
 using System;
 using Random = UnityEngine.Random;
 using System.Linq;
+using BasDidon.PathFinder2D;
 
 [Serializable]
 public class Section
 {
-    Floor Floor { get; }
+    public Floor Floor { get; }
     MazeTowerGenerator Maze => Floor.Maze;
 
     readonly List<Vector2Int> sectionCells;
     public IReadOnlyList<Vector2Int> SectionCells => sectionCells;
+
+    readonly List<Stair> stairs;
+    public IReadOnlyList<Stair> Stairs => stairs;
+
     public IReadOnlyList<Vector2Int> LocalSectionCells => SectionCells.Select(cell => Floor.WorldToLocalPos(cell)).ToList();
     public IEnumerable<Vector2Int> OneWayCells => Floor.OneWayCells.Where(cellPos=>IsContain(cellPos));
     public IEnumerable<Vector2Int> LocalOneWayCells => OneWayCells.Select(cell => Floor.WorldToLocalPos(cell));
@@ -23,9 +28,33 @@ public class Section
         sectionCells = new();
     }
 
+    // Modify
     public void AddCell(Vector2Int cellPos) => sectionCells.Add(cellPos);
     public bool IsContain(Vector2Int cellPos) => sectionCells.Contains(cellPos);
 
+    // ** Connect on OneWayCells
+    public void ConnectUnconnectSection()
+    {
+        // Get unconnect sections
+        var unconnectList = OneWayConnectableSection.Where(section => !stairs.Any(stair => stair.TargetSection == section)).ToList();
+        // pick one of them by random
+        var randSection = unconnectList[Random.Range(0,unconnectList.Count)];
+        // Get possible connect cells
+        var cells = GetOneWayConnectableCells(randSection).ToList();
+        // pick one of cells by random
+        var randCell = cells[Random.Range(0, cells.Count)];
+
+        // add stair to both section
+        AddStair(randCell, randSection.Floor);
+        randSection.AddStair(randCell, Floor);
+    }
+
+    public void AddStair(Vector2Int localPos, Floor targetFloor)
+    {
+        stairs.Add(new(localPos, targetFloor));
+    }
+
+    // Query
     public IEnumerable<Section> ConnectableSection => OtherFloorSections.Where(section => LocalSectionCells.Intersect(section.LocalSectionCells).Any());
     public IEnumerable<Section> OneWayConnectableSection => OtherFloorSections.Where(section => GetOneWayConnectableCells(section).Any());
 
@@ -34,12 +63,33 @@ public class Section
     public IEnumerable<Floor> OthersFloor => Maze.Floors.Where(floor => floor != Floor);
     public IEnumerable<Section> OtherFloorSections => OthersFloor.SelectMany(floor => floor.Sections);
 
+    public List<Vector2Int> FindPathFarthestOneWayCells()
+    {
+        var cellPosPairs = (
+            from fromCellPos in OneWayCells.Select((cellPos, index) => new { CellPos = cellPos, Index = index })
+            from toCellPos in OneWayCells.Skip(fromCellPos.Index + 1)
+            select new { FromCellPos = fromCellPos.CellPos, ToCellPos = toCellPos }
+        ).ToList();
 
+        List<Vector2Int> result = null;
+        cellPosPairs.ForEach(cellPair =>
+        {
+            if(PathFinder.TryFindPath(Floor,cellPair.FromCellPos,cellPair.ToCellPos,Floor.neighborDirs.ToList(),out List<Vector2Int> resultPath))
+            {
+                if (result == null || result.Count < resultPath.Count)
+                {
+                    result = resultPath;
+                }
+            }
+        });
+
+        return result;
+    }
     public override string ToString() => $"F: {Floor.GetFloorIndex()} ,S: {Floor.GetSectionIndex(this)}";
 }
 
 [Serializable]
-public class Floor
+public class Floor:IPathMap
 {
     public MazeTowerGenerator Maze { get; }
     public RectInt FloorRect { get; }
@@ -48,7 +98,9 @@ public class Floor
 
     readonly List<Section> sections;
     public IReadOnlyList<Section> Sections => sections;
-    Dictionary<Vector2Int, CellData> CellDataMap { get; }
+
+    readonly Dictionary<Vector2Int, CellData> cellDataMap;
+    public IReadOnlyDictionary<Vector2Int, CellData> CellDataMap => cellDataMap;
     public KeyValuePair<Vector2Int, CellData> MostDepthCell => CellDataMap.OrderByDescending(pair => pair.Value.depth).First();
 
     int LoopLimiter => 4 * FloorRect.width * FloorRect.height;
@@ -65,7 +117,7 @@ public class Floor
             sections.Add(new Section(this));
         }
 
-        CellDataMap = new();
+        cellDataMap = new();
 
         PlaceSectionRoot();
     }
@@ -73,7 +125,7 @@ public class Floor
     public int GetFloorIndex() => Maze.GetFloorIndex(this);
     public int GetSectionIndex(Section section) => sections.IndexOf(section);
 
-    Section GetSection(Vector2Int cellPos) => sections.FirstOrDefault(section => section.IsContain(cellPos));
+    public Section GetSection(Vector2Int worldPos) => sections.FirstOrDefault(section => section.IsContain(worldPos));
 
     /// <returns> index of <c>Section</c> on <c>Floor</c>,or -1 if the element is not found.</returns>
     public int GetLocalSectionIdx(Vector2Int cellPos) => sections.FindIndex(section => section.IsContain(cellPos));
@@ -156,24 +208,24 @@ public class Floor
         if (!CellDataMap.TryGetValue(from, out CellData fromCellData))
         {
             fromCellData = new();
-            CellDataMap.Add(from, fromCellData);
+            cellDataMap.Add(from, fromCellData);
         }
 
         if (!CellDataMap.TryGetValue(to, out CellData toCellData))
         {
             toCellData = new();
-            CellDataMap.Add(to, toCellData);
+            cellDataMap.Add(to, toCellData);
         }
 
-        CellDataMap[from] = fromCellData.SetConnectByDir(to - from);
+        cellDataMap[from] = fromCellData.SetConnectByDir(to - from);
         fromCellData.depth ??= 1;
         if (fromCellData.depth is int fromDepth)
         {
-            CellDataMap[to] = toCellData.SetConnectByDir(from - to).SetDepth(fromDepth + 1);
+            cellDataMap[to] = toCellData.SetConnectByDir(from - to).SetDepth(fromDepth + 1);
         }
     }
 
-    readonly Vector2Int[] neighborDirs = new Vector2Int[]
+    public readonly Vector2Int[] neighborDirs = new Vector2Int[]
     {
         Vector2Int.up,
         Vector2Int.down,
@@ -205,5 +257,17 @@ public class Floor
         return false;
     }
 
+    public bool CanMoveTo(Vector2Int from, Vector2Int to)
+    {
+        if (!cellDataMap.TryGetValue(from, out CellData fromCell))
+            return false;
+        if (!cellDataMap.TryGetValue(to, out CellData toCell))
+            return false;
+
+        var dir = to - from;
+        return fromCell.IsConnectTo(dir);
+    }
+
     public IEnumerable<Vector2Int> OneWayCells => CellDataMap.Where(pair => pair.Value.IsOneWayCell).Select(pair => pair.Key);
 }
+

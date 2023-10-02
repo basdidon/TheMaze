@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using BasDidon;
 
 public class MazeTowerGenerator : MonoBehaviour, IMazePath
 {
@@ -142,6 +143,13 @@ public class MazeTowerGenerator : MonoBehaviour, IMazePath
         }
     }
 
+    public void DebugFarthestPos()
+    {
+        var path = floors[0].Sections[0].FindPathFarthestOneWayCells();
+        Debug.Log(path.First());
+        Debug.Log(path.Last());
+    }
+
    
     /*
     void ConnectSections()
@@ -257,6 +265,11 @@ public class HirachicalMazeGeneratorEditor : Editor
         if (GUILayout.Button("debugOneWay"))
         {
             towerMazeGenerator.DebugSectionsConnectableOneWay();
+        }
+
+        if (GUILayout.Button("debugFarthestCellPos"))
+        {
+            towerMazeGenerator.DebugFarthestPos();
         }
         /*
         if (GUILayout.Button("RamdomSectionOrder"))

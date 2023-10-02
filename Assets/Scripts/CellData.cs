@@ -47,6 +47,30 @@ public struct CellData
         return SetConnectByDir((Vector2Int)dir, value);
     }
 
+    public bool IsConnectTo(Vector2Int dir)
+    {
+        if (dir == Vector2Int.up)
+        {
+            return connection.IsConnectN;
+        }
+        else if (dir == Vector2Int.down)
+        {
+            return connection.IsConnectS;
+        }
+        else if (dir == Vector2Int.left)
+        {
+            return connection.IsConnectW;
+        }
+        else if (dir == Vector2Int.right)
+        {
+            return connection.IsConnectE;
+        }
+        else
+        {
+            throw new Exception("Unexpected value");
+        }
+    }
+
     internal CellData SetDepth(int? v)
     {
         throw new NotImplementedException();

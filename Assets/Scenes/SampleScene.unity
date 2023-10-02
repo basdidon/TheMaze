@@ -419,11 +419,11 @@ MonoBehaviour:
   - {r: 1, g: 0, b: 0, a: 1}
   - {r: 0.5, g: 0.5, b: 0.5, a: 1}
   <PathTile>k__BackingField: {fileID: 11400000, guid: 512b43c1d4f65ca439c57fb7c2718efb, type: 2}
-  <TowerFloor>k__BackingField: 3
-  <FloorWidth>k__BackingField: 30
-  <FloorHeight>k__BackingField: 30
+  <TowerFloor>k__BackingField: 2
+  <FloorWidth>k__BackingField: 10
+  <FloorHeight>k__BackingField: 10
   <FloorOffset>k__BackingField: 1
-  <Floors>k__BackingField: []
+  floors: []
 --- !u!1 &381596383
 GameObject:
   m_ObjectHideFlags: 0
