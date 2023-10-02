@@ -26,6 +26,7 @@ public class Section
     {
         Floor = floor;
         sectionCells = new();
+        stairs = new();
     }
 
     // Modify
@@ -36,9 +37,14 @@ public class Section
     public void ConnectUnconnectSection()
     {
         // Get unconnect sections
-        var unconnectList = OneWayConnectableSection.Where(section => !stairs.Any(stair => stair.TargetSection == section)).ToList();
+        List<Section> unconnectList = OneWayConnectableSection.Where(section => !stairs.Any(stair => stair.TargetSection == section)).ToList();
+        
+        if (unconnectList.Count < 1)
+            return;
+        
+        Debug.Log(unconnectList.Count);
         // pick one of them by random
-        var randSection = unconnectList[Random.Range(0,unconnectList.Count)];
+        var randSection = unconnectList[Random.Range(0, unconnectList.Count)];
         // Get possible connect cells
         var cells = GetOneWayConnectableCells(randSection).ToList();
         // pick one of cells by random
@@ -47,6 +53,7 @@ public class Section
         // add stair to both section
         AddStair(randCell, randSection.Floor);
         randSection.AddStair(randCell, Floor);
+
     }
 
     public void AddStair(Vector2Int localPos, Floor targetFloor)

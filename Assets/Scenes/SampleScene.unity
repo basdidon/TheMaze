@@ -123,6 +123,37 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &5612161
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5612162}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5612162
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5612161}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 15.986812, y: 8.178569, z: 0.28515005}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &77242062
 GameObject:
   m_ObjectHideFlags: 0
@@ -420,10 +451,12 @@ MonoBehaviour:
   - {r: 0.5, g: 0.5, b: 0.5, a: 1}
   <PathTile>k__BackingField: {fileID: 11400000, guid: 512b43c1d4f65ca439c57fb7c2718efb, type: 2}
   <TowerFloor>k__BackingField: 2
-  <FloorWidth>k__BackingField: 10
-  <FloorHeight>k__BackingField: 10
+  <FloorWidth>k__BackingField: 20
+  <FloorHeight>k__BackingField: 20
   <FloorOffset>k__BackingField: 1
   floors: []
+  stairParent: {fileID: 5612162}
+  stairPrefab: {fileID: 1210512529736030464, guid: 5705b784f9041de47bec84857e1adc18, type: 3}
 --- !u!1 &381596383
 GameObject:
   m_ObjectHideFlags: 0
@@ -690,3 +723,4 @@ SceneRoots:
   - {fileID: 519420032}
   - {fileID: 1857234501}
   - {fileID: 340646353}
+  - {fileID: 5612162}

@@ -8,6 +8,8 @@ using BasDidon;
 
 public class MazeTowerGenerator : MonoBehaviour, IMazePath
 {
+    // Grid
+    Grid Grid { get; set; }
     // TileMaps
     [field: SerializeField] public Tilemap GroundTileMap { get; private set; }
     [field: SerializeField] public Tilemap PathTileMap { get; private set; }
@@ -36,8 +38,13 @@ public class MazeTowerGenerator : MonoBehaviour, IMazePath
     public IReadOnlyList<Floor> Floors => floors;
     public int GetFloorIndex(Floor floor) => floors.IndexOf(floor);
 
+    // prefab
+    [SerializeField] public Transform stairParent;
+    [SerializeField] public GameObject stairPrefab;
+
     private void Start()
     {
+        Grid = FindFirstObjectByType<Grid>();
         PathTile.Initialize(this);
     }
 
@@ -102,8 +109,24 @@ public class MazeTowerGenerator : MonoBehaviour, IMazePath
                 }
 
             }
-            
         }
+
+        // place stair for each section
+        foreach(var section in Floors.SelectMany(floor => floor.Sections))
+        {
+            section.ConnectUnconnectSection();
+        }
+
+        foreach(var section in Floors.SelectMany(floor => floor.Sections))
+        {
+            // render stairs
+            foreach(var stair in section.Stairs)
+            {
+                Instantiate(stairPrefab, Grid.GetCellCenterWorld(((Vector3Int)section.Floor.LocalToWorldPos(stair.LocalCellPos))), Quaternion.identity, stairParent);
+            }
+        }
+
+
     }
 
     // all sections in same localPos
