@@ -30,6 +30,7 @@ public class MazeTowerGenerator : MonoBehaviour, IMazePath
 
     // Floor Properties
     [field: SerializeField] int TowerFloor { get; set; }
+    [field: SerializeField] int MaxSection { get; set; }
     [field: SerializeField] int FloorWidth { get; set; } = 20;
     [field: SerializeField] int FloorHeight { get; set; } = 20;
     [field: SerializeField] int FloorOffset { get; set; } = 1;
@@ -80,7 +81,7 @@ public class MazeTowerGenerator : MonoBehaviour, IMazePath
 
         for (int i = 0; i < TowerFloor; i++)
         {
-            var floor = new Floor(this, new RectInt(i * (FloorWidth + FloorOffset), 0, FloorWidth, FloorHeight), 3);
+            var floor = new Floor(this, new RectInt(i * (FloorWidth + FloorOffset), 0, FloorWidth, FloorHeight), MaxSection);
             floors.Add(floor);
 
             foreach (var rectPos in floor.FloorRect.allPositionsWithin)
@@ -89,18 +90,6 @@ public class MazeTowerGenerator : MonoBehaviour, IMazePath
 
                 // Ground
                 GroundTileMap.SetTile(cellPos, GroundTile);
-
-                // section
-                var sectionIdx = floor.GetLocalSectionIdx(rectPos);
-                if (sectionIdx != -1)
-                {
-                    Tile tile = SectionTile;
-                    if (sectionIdx < SectionColors.Length)
-                    {
-                        tile.color = SectionColors[sectionIdx];
-                    }
-                    SectionTileMap.SetTile(cellPos, tile);
-                }
 
                 // Path
                 if (floor.TryGetCellData(rectPos, out CellData cellData))
@@ -126,6 +115,30 @@ public class MazeTowerGenerator : MonoBehaviour, IMazePath
             }
         }
 
+        // section
+        foreach (var floor in Floors)
+        {
+            foreach(var rectPos in floor.FloorRect.allPositionsWithin)
+            {
+                Color tileColor = Color.black;
+                if (!floor.GetSection(rectPos).IsUnconnected)
+                {
+                    var sectionIdx = floor.GetLocalSectionIdx(rectPos);
+                    if (sectionIdx != -1)
+                    {
+                        if (sectionIdx < SectionColors.Length)
+                        {
+                            tileColor = SectionColors[sectionIdx];
+                        }
+
+                    }
+                }
+
+                Tile tile = SectionTile;
+                tile.color = tileColor;
+                SectionTileMap.SetTile((Vector3Int)rectPos, tile);
+            }
+        }
 
     }
 

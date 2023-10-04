@@ -448,9 +448,17 @@ MonoBehaviour:
   - {r: 1, g: 1, b: 1, a: 1}
   - {r: 0, g: 0, b: 1, a: 1}
   - {r: 1, g: 0, b: 0, a: 1}
-  - {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  - {r: 1, g: 0.3066038, b: 0.3066038, a: 1}
+  - {r: 0.8867924, g: 0.81407803, b: 0.4141153, a: 1}
+  - {r: 0.86704326, g: 0.9150943, b: 0.13381095, a: 1}
+  - {r: 0.24528301, g: 0.21404414, b: 0.21404414, a: 1}
+  - {r: 0.254717, g: 0.061276253, b: 0.061276253, a: 1}
+  - {r: 0.059763268, g: 0.17530763, b: 0.745283, a: 1}
+  - {r: 0, g: 0.54799587, b: 0.8962264, a: 1}
+  - {r: 0.377136, g: 0.7075472, b: 0.5286031, a: 1}
   <PathTile>k__BackingField: {fileID: 11400000, guid: 512b43c1d4f65ca439c57fb7c2718efb, type: 2}
-  <TowerFloor>k__BackingField: 2
+  <TowerFloor>k__BackingField: 3
+  <MaxSection>k__BackingField: 10
   <FloorWidth>k__BackingField: 20
   <FloorHeight>k__BackingField: 20
   <FloorOffset>k__BackingField: 1

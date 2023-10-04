@@ -92,6 +92,9 @@ public class Section
 
         return result;
     }
+
+    public bool IsUnconnected => Stairs.Count() == 0;
+
     public override string ToString() => $"F: {Floor.GetFloorIndex()} ,S: {Floor.GetSectionIndex(this)}";
 }
 
