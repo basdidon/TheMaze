@@ -12,11 +12,17 @@ public class Section
     public Floor Floor { get; }
     MazeTowerGenerator Maze => Floor.Maze;
 
+    public bool IsConnentMainWay { get; set; }
+
     readonly List<Vector2Int> sectionCells;
     public IReadOnlyList<Vector2Int> SectionCells => sectionCells;
 
     readonly List<Stair> stairs;
     public IReadOnlyList<Stair> Stairs => stairs;
+
+    // portal
+    readonly List<Portal> portals;
+    public IReadOnlyList<Portal> Portals => portals;
 
     public IReadOnlyList<Vector2Int> LocalSectionCells => SectionCells.Select(cell => Floor.WorldToLocalPos(cell)).ToList();
     public IEnumerable<Vector2Int> OneWayCells => Floor.OneWayCells.Where(cellPos=>IsContain(cellPos));
@@ -27,6 +33,8 @@ public class Section
         Floor = floor;
         sectionCells = new();
         stairs = new();
+        portals = new();
+        IsConnentMainWay = false;
     }
 
     // Modify
@@ -61,6 +69,11 @@ public class Section
         stairs.Add(new(localPos, targetFloor));
     }
 
+    public void AddPortal(Vector2Int fromLocalPos, Vector2Int toLocalPos, Section otherSection)
+    {
+        portals.Add(new(this, otherSection, fromLocalPos, toLocalPos));
+    }
+
     // Query
     public IEnumerable<Section> ConnectableSection => OtherFloorSections.Where(section => LocalSectionCells.Intersect(section.LocalSectionCells).Any());
     public IEnumerable<Section> OneWayConnectableSection => OtherFloorSections.Where(section => GetOneWayConnectableCells(section).Any());
@@ -93,7 +106,7 @@ public class Section
         return result;
     }
 
-    public bool IsUnconnected => Stairs.Count() == 0;
+    public bool IsUnconnected => true;//Stairs.Count() == 0;
 
     public override string ToString() => $"F: {Floor.GetFloorIndex()} ,S: {Floor.GetSectionIndex(this)}";
 }

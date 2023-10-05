@@ -404,6 +404,7 @@ GameObject:
   m_Component:
   - component: {fileID: 340646353}
   - component: {fileID: 340646354}
+  - component: {fileID: 340646355}
   m_Layer: 0
   m_Name: SectionCreator
   m_TagString: Untagged
@@ -465,6 +466,32 @@ MonoBehaviour:
   floors: []
   stairParent: {fileID: 5612162}
   stairPrefab: {fileID: 1210512529736030464, guid: 5705b784f9041de47bec84857e1adc18, type: 3}
+--- !u!114 &340646355
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 340646351}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f9c610bab8d11b4bb078a0c083287e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <MazeRect>k__BackingField:
+    x: 0
+    y: 0
+    width: 2
+    height: 2
+  <FloorCount>k__BackingField: 3
+  <GroundTileMap>k__BackingField: {fileID: 381596386}
+  <PathTileMap>k__BackingField: {fileID: 77242065}
+  <SectionTileMap>k__BackingField: {fileID: 260252008}
+  <GroundTile>k__BackingField: {fileID: 11400000, guid: 52dcb930b0bdfc248b98f6e3e33f8525, type: 2}
+  <FinishTile>k__BackingField: {fileID: 11400000, guid: 3fdad34d614962c4a974b01cda276406, type: 2}
+  <SectionTile>k__BackingField: {fileID: 11400000, guid: 3fdad34d614962c4a974b01cda276406, type: 2}
+  <PathTile>k__BackingField: {fileID: 11400000, guid: 512b43c1d4f65ca439c57fb7c2718efb, type: 2}
+  <FloorOffset>k__BackingField: 1
 --- !u!1 &381596383
 GameObject:
   m_ObjectHideFlags: 0

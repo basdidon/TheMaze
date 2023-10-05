@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using BasDidon;
+using Random = UnityEngine.Random;
 
 public class MazeTowerGenerator : MonoBehaviour, IMazePath
 {
@@ -100,6 +101,24 @@ public class MazeTowerGenerator : MonoBehaviour, IMazePath
             }
         }
 
+        // mark onewaycells
+        foreach(var floor in Floors)
+        {
+            foreach(var section in floor.Sections)
+            {
+                foreach(var oneWayCell in section.OneWayCells)
+                {
+                    Instantiate(stairPrefab, Grid.GetCellCenterWorld((Vector3Int)oneWayCell), Quaternion.identity, stairParent);
+                }
+            }
+        }
+        /*
+        foreach(var oneWayCell in Floors.SelectMany(floor => floor.Sections.SelectMany(section => section.OneWayCells)))
+        {
+            Instantiate(stairPrefab, Grid.GetCellCenterWorld(((Vector3Int)section.Floor.LocalToWorldPos(stair.LocalCellPos))), Quaternion.identity, stairParent);
+        }
+
+        /*
         // place stair for each section
         foreach(var section in Floors.SelectMany(floor => floor.Sections))
         {
@@ -114,6 +133,8 @@ public class MazeTowerGenerator : MonoBehaviour, IMazePath
                 Instantiate(stairPrefab, Grid.GetCellCenterWorld(((Vector3Int)section.Floor.LocalToWorldPos(stair.LocalCellPos))), Quaternion.identity, stairParent);
             }
         }
+        */
+        //ConnectAllSections();
 
         // section
         foreach (var floor in Floors)
@@ -121,17 +142,26 @@ public class MazeTowerGenerator : MonoBehaviour, IMazePath
             foreach(var rectPos in floor.FloorRect.allPositionsWithin)
             {
                 Color tileColor = Color.black;
-                if (!floor.GetSection(rectPos).IsUnconnected)
+                Section section = floor.GetSection(rectPos);
+                /*
+                Debug.Log(section);
+                if (section.IsConnentMainWay)
                 {
-                    var sectionIdx = floor.GetLocalSectionIdx(rectPos);
-                    if (sectionIdx != -1)
-                    {
-                        if (sectionIdx < SectionColors.Length)
-                        {
-                            tileColor = SectionColors[sectionIdx];
-                        }
+                    tileColor = Color.white;
+                }
+                else if (!section.IsUnconnected)
+                {
 
+                }*/
+
+                var sectionIdx = floor.GetLocalSectionIdx(rectPos);
+                if (sectionIdx != -1)
+                {
+                    if (sectionIdx < SectionColors.Length)
+                    {
+                        tileColor = SectionColors[sectionIdx];
                     }
+
                 }
 
                 Tile tile = SectionTile;
@@ -139,14 +169,57 @@ public class MazeTowerGenerator : MonoBehaviour, IMazePath
                 SectionTileMap.SetTile((Vector3Int)rectPos, tile);
             }
         }
-
     }
 
-    // all sections in same localPos
+    bool IsAllConnect()
+    {
+        HashSet<Section> queued = new() { floors[0].Sections[0]};
+        HashSet<Section> visited = new();
+
+        while(queued.Count > 0)
+        {
+            var section = queued.Last();
+            queued.Remove(section);
+            visited.Add(section);
+
+            // add other section that connect to this section to queued
+        }
+
+        if (visited.Count == floors.SelectMany(floor => floor.Sections).Count())
+            return true;
+        return false;
+    }
+
     /*
-    public HashSet<Section> GetSectionsByLocalPos(Vector2Int localPos)=> floors.Select(floor => floor.GetSectionByLocalPos(localPos)).ToHashSet();
-    public HashSet<Section> GetSectionsByLocalPosButOneWayCell(Vector2Int localPos)=> floors.Where(floor=> floor.IsOneWayCell(localPos)).Select(floor=> floor.GetSectionByLocalPos(localPos)).ToHashSet();
-    */
+    // unused
+    void ConnectAllSections()
+    {
+        var startSection = floors[0].Sections[0];
+
+        List<Section> UnConnectedSections = floors.SelectMany(floor => floor.Sections).ToList();
+        List<Section> QueuedSections = new() { startSection };
+        List<Section> ConnectedSections = new() { };
+
+        UnConnectedSections.Remove(startSection);
+
+        while(QueuedSections.Count > 0)
+        {
+            var section = QueuedSections.Last();
+            QueuedSections.Remove(section);
+            section.IsConnentMainWay = true;
+            foreach(var otherSection in section.Stairs.Select(stair => stair.TargetSection))
+            {
+                if (UnConnectedSections.Contains(otherSection))
+                {
+                    UnConnectedSections.Remove(otherSection);
+                    QueuedSections.Add(otherSection);
+                }
+            }
+        }
+
+        
+    }
+*/
     public void DebugSectionsConnectable()
     {
         foreach(var floor in floors)
