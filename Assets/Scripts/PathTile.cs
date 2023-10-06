@@ -27,12 +27,11 @@ public class PathTile : Tile
 
     public override void GetTileData(Vector3Int position, ITilemap tilemap, ref TileData tileData)
     {
-        Debug.Log("Reset");
         base.GetTileData(position, tilemap, ref tileData);
 
         tileData.sprite = DefaultSprite;
 
-        foreach (var tile in TileConditions)
+        foreach (var condition in TileConditions)
         {
             //Debug.Log(MazePath?.GetType());
 
@@ -41,10 +40,15 @@ public class PathTile : Tile
 
             if (MazePath.TryGetTileConection(position, out TileConnection connection))
             {
+                /*
                 if (tile.TryGetSprite(connection, out Sprite sprite))
                 {
                     tileData.sprite = sprite;
                     break;
+                }*/
+                if(condition.TryGetTile(connection,out Tile tile))
+                {
+                    //tileData. = tile;
                 }
             }
             

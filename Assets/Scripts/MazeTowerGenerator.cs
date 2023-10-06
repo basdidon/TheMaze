@@ -4,10 +4,9 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using BasDidon;
 using Random = UnityEngine.Random;
 
-public class MazeTowerGenerator : MonoBehaviour, IMazePath
+public class MazeTowerGenerator : MonoBehaviour
 {
     // Grid
     Grid Grid { get; set; }
@@ -27,8 +26,8 @@ public class MazeTowerGenerator : MonoBehaviour, IMazePath
         Color.red,
         Color.gray,
     };
-    [field: SerializeField] public PathTile PathTile { get; private set; }
-
+    //[field: SerializeField] public PathTile PathTile { get; private set; }
+    [field: SerializeField] public MazeTile MazeTile { get; private set; }
     // Floor Properties
     [field: SerializeField] int TowerFloor { get; set; }
     [field: SerializeField] int MaxSection { get; set; }
@@ -44,30 +43,14 @@ public class MazeTowerGenerator : MonoBehaviour, IMazePath
     [SerializeField] public Transform stairParent;
     [SerializeField] public GameObject stairPrefab;
 
+
+    // portal
+    [SerializeField] public Sprite sameFloorPortalSprite;
     private void Start()
     {
         Grid = FindFirstObjectByType<Grid>();
-        PathTile.Initialize(this);
     }
-
-    // Implement IMazePath
-    public bool TryGetTileConection(Vector3Int cellPos,out TileConnection connection)
-    {
-        connection = new();
-
-        foreach (var floor in floors)
-        {
-            // inside rect handle
-            if(floor.TryGetCellData((Vector2Int)cellPos,out CellData cellData))
-            {
-                connection = cellData.connection;
-                return true;
-            }
-        }
-
-        return false;
-    }
-
+   
     void ClearTileMaps()
     {
         GroundTileMap.ClearAllTiles();
@@ -95,64 +78,46 @@ public class MazeTowerGenerator : MonoBehaviour, IMazePath
                 // Path
                 if (floor.TryGetCellData(rectPos, out CellData cellData))
                 {
-                    PathTileMap.SetTile(cellPos, PathTile);
+                    PathTileMap.SetTile(cellPos, MazeTile.GetTile(cellData.connection));
                 }
 
             }
         }
 
-        // mark onewaycells
-        foreach(var floor in Floors)
+        RDFSsection();
+
+        foreach (var floor in Floors)
         {
-            foreach(var section in floor.Sections)
+            foreach (var section in floor.Sections)
             {
-                foreach(var oneWayCell in section.OneWayCells)
+                foreach (var portalData in section.Portals)
                 {
-                    Instantiate(stairPrefab, Grid.GetCellCenterWorld((Vector3Int)oneWayCell), Quaternion.identity, stairParent);
+                    var clone = PortalObjectPool.Instance.GetObject(Grid.GetCellCenterWorld((Vector3Int)floor.LocalToWorldPos(portalData.FromLocalPos)));
+                    if (clone == null)
+                        return;
+
+                    if(clone.TryGetComponent(out Portal portal))
+                    {
+                        portal.SetDestination(portalData.ToFloor.LocalToWorldPos(portalData.ToLocalPos));
+                        if (portalData.FromFloor == portalData.ToFloor)
+                        {
+                            if (clone.TryGetComponent(out SpriteRenderer renderer))
+                            {
+                                renderer.sprite = sameFloorPortalSprite;
+                            }
+                        }
+                    }
+
                 }
             }
         }
-        /*
-        foreach(var oneWayCell in Floors.SelectMany(floor => floor.Sections.SelectMany(section => section.OneWayCells)))
-        {
-            Instantiate(stairPrefab, Grid.GetCellCenterWorld(((Vector3Int)section.Floor.LocalToWorldPos(stair.LocalCellPos))), Quaternion.identity, stairParent);
-        }
-
-        /*
-        // place stair for each section
-        foreach(var section in Floors.SelectMany(floor => floor.Sections))
-        {
-            section.ConnectUnconnectSection();
-        }
-
-        foreach(var section in Floors.SelectMany(floor => floor.Sections))
-        {
-            // render stairs
-            foreach(var stair in section.Stairs)
-            {
-                Instantiate(stairPrefab, Grid.GetCellCenterWorld(((Vector3Int)section.Floor.LocalToWorldPos(stair.LocalCellPos))), Quaternion.identity, stairParent);
-            }
-        }
-        */
-        //ConnectAllSections();
-
+       
         // section
         foreach (var floor in Floors)
         {
             foreach(var rectPos in floor.FloorRect.allPositionsWithin)
             {
                 Color tileColor = Color.black;
-                Section section = floor.GetSection(rectPos);
-                /*
-                Debug.Log(section);
-                if (section.IsConnentMainWay)
-                {
-                    tileColor = Color.white;
-                }
-                else if (!section.IsUnconnected)
-                {
-
-                }*/
 
                 var sectionIdx = floor.GetLocalSectionIdx(rectPos);
                 if (sectionIdx != -1)
@@ -190,36 +155,44 @@ public class MazeTowerGenerator : MonoBehaviour, IMazePath
         return false;
     }
 
-    /*
-    // unused
-    void ConnectAllSections()
+    void RDFSsection()
     {
-        var startSection = floors[0].Sections[0];
+        //random pick one section
+        var allSection = Floors.SelectMany(floor => floor.Sections).ToList();
+        var startSection = allSection[Random.Range(0,allSection.Count)];
+        var connected = new HashSet<Section>() { startSection };
 
-        List<Section> UnConnectedSections = floors.SelectMany(floor => floor.Sections).ToList();
-        List<Section> QueuedSections = new() { startSection };
-        List<Section> ConnectedSections = new() { };
-
-        UnConnectedSections.Remove(startSection);
-
-        while(QueuedSections.Count > 0)
+        var count = 0;
+        while (allSection.Count != connected.Count && count < 500)
         {
-            var section = QueuedSections.Last();
-            QueuedSections.Remove(section);
-            section.IsConnentMainWay = true;
-            foreach(var otherSection in section.Stairs.Select(stair => stair.TargetSection))
+            Debug.Log($"{connected.Count} / {allSection.Count}");
+            count++;
+            
+            var randSections = connected.Where(section => section.UnuseOneWayCells.Count > 0).ToList();
+            var otherSections = allSection.Where(section => section.UnuseOneWayCells.Count > 0).ToList();
+
+            var randSection = randSections[Random.Range(0, randSections.Count)];
+            var otherSection = otherSections[Random.Range(0, otherSections.Count)];
+            if(randSection != otherSection)
             {
-                if (UnConnectedSections.Contains(otherSection))
-                {
-                    UnConnectedSections.Remove(otherSection);
-                    QueuedSections.Add(otherSection);
-                }
+                var randCell = randSection.UnuseOneWayCells[Random.Range(0,randSection.UnuseOneWayCells.Count)];
+                var otherCell = otherSection.UnuseOneWayCells[Random.Range(0, otherSection.UnuseOneWayCells.Count)];
+
+                randSection.AddPortal(randCell, otherCell, otherSection);
+                otherSection.AddPortal(otherCell, randCell, randSection);
+
+                connected.Add(otherSection);
             }
         }
+        Debug.Log($"count : {count}");
 
-        
     }
-*/
+
+    void FindFarthestSections()
+    {
+       
+    }
+
     public void DebugSectionsConnectable()
     {
         foreach(var floor in floors)
@@ -258,95 +231,6 @@ public class MazeTowerGenerator : MonoBehaviour, IMazePath
         Debug.Log(path.First());
         Debug.Log(path.Last());
     }
-
-   
-    /*
-    void ConnectSections()
-    {
-        if (TowerFloor <= 1)
-            return;
-
-        var sections = Floors.Select(floor => floor.GetSectionByLocalPos(Vector2Int.zero)).ToArray();
-        if(TowerFloor == 2)
-        {
-            sections[0].AddConnectableSection(sections[1]);
-            sections[1].AddConnectableSection(sections[0]);
-        }
-    }*/
-    /*
-public void RandomFloorSectionOrder()
-{
-   if (SectionCount < TowerFloor)
-       SectionCount = TowerFloor;
-
-   FloorSectionOrder = new int?[SectionCount];
-
-   for (int i = 0; i < TowerFloor; i++)
-   {
-       int rand;
-
-       do
-       {
-           rand = Random.Range(0, SectionCount);
-       } while (FloorSectionOrder[rand] != null);
-
-       FloorSectionOrder[rand] = i;
-   }
-
-   for (int i = 0; i < SectionCount; i++)
-   {
-       if (FloorSectionOrder[i] != null)
-           continue;
-
-       FloorSectionOrder[i] = Random.Range(0, TowerFloor);
-   }
-
-   Debug.Log("--------------");
-   foreach (var value in FloorSectionOrder)
-   {
-       Debug.Log(value);
-   }
-}
-public void RandomCreateStair(int floorIndex, int otherFloorIndex)
-{
-   int lowerFloorIndex;
-   int upperFloorIndex;
-
-   if (floorIndex > otherFloorIndex)
-   {
-       lowerFloorIndex = otherFloorIndex;
-       upperFloorIndex = floorIndex;
-   }
-   else if (floorIndex < otherFloorIndex)
-   {
-       lowerFloorIndex = floorIndex;
-       upperFloorIndex = otherFloorIndex;
-   }
-   else  // equals
-   {
-       return;
-   }
-
-   Vector3Int randCellPos;
-   do
-   {
-       randCellPos = new(UnityEngine.Random.Range(MapRect.xMin, MapRect.xMax), Random.Range(MapRect.yMin, MapRect.yMax), 0);
-   }
-   while (randCellPos == StartAt);
-
-   for (int i = lowerFloorIndex; i <= upperFloorIndex - lowerFloorIndex; i++)
-   {
-       if (i == upperFloorIndex || i == lowerFloorIndex)
-       {
-           GroundTileMap.SetTile(GetWorldPos(randCellPos, i), StairTile);
-       }
-       else
-       {
-           GroundTileMap.SetTile(GetWorldPos(randCellPos, i), null);
-       }
-   }
-}
-*/
 }
 
 #if UNITY_EDITOR
@@ -380,21 +264,6 @@ public class HirachicalMazeGeneratorEditor : Editor
         {
             towerMazeGenerator.DebugFarthestPos();
         }
-        /*
-        if (GUILayout.Button("RamdomSectionOrder"))
-        {
-            //towerMazeGenerator.RandomFloorSectionOrder();
-        }
-
-        if (GUILayout.Button("RandomStair"))
-        {
-            //towerMazeGenerator.RandomCreateStair(0,2);
-        }
-
-        if (GUILayout.Button("Generate Maze"))
-        {
-            //towerMazeGenerator.CreateMaze();
-        }*/
     }
 }
 #endif

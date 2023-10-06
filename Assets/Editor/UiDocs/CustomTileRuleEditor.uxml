@@ -4,7 +4,7 @@
     <ui:VisualElement style="flex-grow: 1;">
         <ui:VisualElement name="VisualElement" style="flex-direction: row; flex-grow: 1;">
             <ui:VisualElement name="tile-rule-picker-container" class="column-container" />
-            <uie:ObjectField binding-path="Sprite" type="UnityEngine.Sprite, UnityEngine.CoreModule" style="height: 100px; width: 100px; flex-direction: column;" />
+            <uie:ObjectField binding-path="Tile" type="UnityEngine.Tilemaps.Tile, UnityEngine.TilemapModule" style="height: 100px; width: 100px; flex-direction: column;" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

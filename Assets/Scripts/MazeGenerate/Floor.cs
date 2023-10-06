@@ -21,8 +21,8 @@ public class Section
     public IReadOnlyList<Stair> Stairs => stairs;
 
     // portal
-    readonly List<Portal> portals;
-    public IReadOnlyList<Portal> Portals => portals;
+    readonly List<PortalData> portals;
+    public IReadOnlyList<PortalData> Portals => portals;
 
     public IReadOnlyList<Vector2Int> LocalSectionCells => SectionCells.Select(cell => Floor.WorldToLocalPos(cell)).ToList();
     public IEnumerable<Vector2Int> OneWayCells => Floor.OneWayCells.Where(cellPos=>IsContain(cellPos));
@@ -61,7 +61,6 @@ public class Section
         // add stair to both section
         AddStair(randCell, randSection.Floor);
         randSection.AddStair(randCell, Floor);
-
     }
 
     public void AddStair(Vector2Int localPos, Floor targetFloor)
@@ -107,6 +106,15 @@ public class Section
     }
 
     public bool IsUnconnected => true;//Stairs.Count() == 0;
+
+    public List<Vector2Int> UnuseOneWayCells
+    {
+        get
+        {
+            return LocalOneWayCells
+                .Where(cellPos => !Stairs.Any(stair => stair.LocalCellPos == cellPos) && !Portals.Any(portal => portal.FromLocalPos == cellPos)).ToList();
+        }
+    }
 
     public override string ToString() => $"F: {Floor.GetFloorIndex()} ,S: {Floor.GetSectionIndex(this)}";
 }
