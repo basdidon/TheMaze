@@ -43,7 +43,6 @@ public class MazeTowerGenerator : MonoBehaviour
     [SerializeField] public Transform stairParent;
     [SerializeField] public GameObject stairPrefab;
 
-
     // portal
     [SerializeField] public Sprite sameFloorPortalSprite;
     private void Start()
@@ -134,6 +133,39 @@ public class MazeTowerGenerator : MonoBehaviour
                 SectionTileMap.SetTile((Vector3Int)rectPos, tile);
             }
         }
+
+        PathTileMap.RefreshAllTiles();
+        Debug.Log("*----*");
+        DebugPhysicsShapeCount();
+        Debug.Log("*----*");
+    }
+
+    private void Update()
+    {
+        DebugPhysicsShapeCount();
+    }
+
+    public void DebugPhysicsShapeCount()
+    {
+        if (PathTileMap.TryGetComponent(out CompositeCollider2D compositeCollider))
+        {
+            compositeCollider.GenerateGeometry();
+            var n = compositeCollider.shapeCount;
+            Debug.Log($"tilemap physicsShape (n) = {n}");
+        }
+    }
+
+    void GenerateShadowCaster2D()
+    {
+
+        if(PathTileMap.TryGetComponent(out ShadowCaster2DCreator creator))
+        {
+            creator.AltCreate();
+        }
+        else
+        {
+            Debug.Log("not found.");
+        }
     }
 
     bool IsAllConnect()
@@ -165,7 +197,7 @@ public class MazeTowerGenerator : MonoBehaviour
         var count = 0;
         while (allSection.Count != connected.Count && count < 500)
         {
-            Debug.Log($"{connected.Count} / {allSection.Count}");
+            //Debug.Log($"{connected.Count} / {allSection.Count}");
             count++;
             
             var randSections = connected.Where(section => section.UnuseOneWayCells.Count > 0).ToList();
@@ -184,7 +216,7 @@ public class MazeTowerGenerator : MonoBehaviour
                 connected.Add(otherSection);
             }
         }
-        Debug.Log($"count : {count}");
+        //Debug.Log($"count : {count}");
 
     }
 
@@ -250,6 +282,11 @@ public class HirachicalMazeGeneratorEditor : Editor
             towerMazeGenerator.PlaceGroundFloor();
         }
 
+        if(GUILayout.Button("Count Tilemap PhysicsShape"))
+        {
+            towerMazeGenerator.DebugPhysicsShapeCount();
+        }
+        /*
         if (GUILayout.Button("debug"))
         {
             towerMazeGenerator.DebugSectionsConnectable();
@@ -263,7 +300,7 @@ public class HirachicalMazeGeneratorEditor : Editor
         if (GUILayout.Button("debugFarthestCellPos"))
         {
             towerMazeGenerator.DebugFarthestPos();
-        }
+        }*/
     }
 }
 #endif
