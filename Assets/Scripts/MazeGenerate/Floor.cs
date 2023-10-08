@@ -70,6 +70,7 @@ public class Section
 
     public void AddPortal(Vector2Int fromLocalPos, Vector2Int toLocalPos, Section otherSection)
     {
+        Debug.Log($"AddCell portal {this} to {otherSection}");
         portals.Add(new(this, otherSection, fromLocalPos, toLocalPos));
     }
 
@@ -113,6 +114,17 @@ public class Section
         {
             return LocalOneWayCells
                 .Where(cellPos => !Stairs.Any(stair => stair.LocalCellPos == cellPos) && !Portals.Any(portal => portal.FromLocalPos == cellPos)).ToList();
+        }
+    }
+
+    public HashSet<Section> ConnectedSections
+    {
+        get
+        {
+            HashSet<Section> portalConnected = portals.Select(portal => portal.ToSection).ToHashSet();
+            return portalConnected;
+            /*HashSet<Section> stairConnected = stairs.Select(stair => stair.TargetSection).ToHashSet();
+            return portalConnected.Union(stairConnected).ToHashSet();*/
         }
     }
 

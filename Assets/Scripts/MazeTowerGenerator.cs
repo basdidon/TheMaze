@@ -43,6 +43,9 @@ public class MazeTowerGenerator : MonoBehaviour
     [SerializeField] public Transform stairParent;
     [SerializeField] public GameObject stairPrefab;
 
+    // Query
+    IEnumerable<Section> AllSections => floors.SelectMany(floor => floor.Sections);
+
     // portal
     [SerializeField] public Sprite sameFloorPortalSprite;
     private void Start()
@@ -140,11 +143,6 @@ public class MazeTowerGenerator : MonoBehaviour
         Debug.Log("*----*");
     }
 
-    private void Update()
-    {
-        DebugPhysicsShapeCount();
-    }
-
     public void DebugPhysicsShapeCount()
     {
         if (PathTileMap.TryGetComponent(out CompositeCollider2D compositeCollider))
@@ -220,9 +218,67 @@ public class MazeTowerGenerator : MonoBehaviour
 
     }
 
-    void FindFarthestSections()
+    public void FindFarthestSections(List<SectionsDistance> sectionsDistances)
     {
-       
+        List<SectionsDistance> queued = new();
+        List<SectionsDistance> completed = new();
+
+        foreach (var startFrom in AllSections)
+        {
+            queued.Clear();
+            completed.Clear();
+
+            foreach (var other in startFrom.ConnectedSections)
+            {
+                queued.Add(new SectionsDistance(startFrom, other));
+            }
+
+            var loopLimiter = 0;
+            while (queued.Count > 0 && loopLimiter < 100)
+            {
+                loopLimiter++;
+                var _sectionDistance = queued.Last();
+                queued.Remove(_sectionDistance);
+
+                foreach (var other in _sectionDistance.To.ConnectedSections)
+                {
+                    var isInQueued = queued.Exists(sd => sd.To == other);
+                    var isInCompleted = completed.Exists(sd => sd.To == other);
+
+                    if (!isInQueued && !isInCompleted)
+                    {
+                        Debug.Log($"{startFrom} to {other} : {_sectionDistance.Distance + 1} added");
+                        queued.Add(new SectionsDistance(startFrom, other, _sectionDistance.Distance + 1));
+                    }
+                    else if (isInCompleted)
+                    {
+                        var completedSD = completed.Find(sd => sd.To.ConnectedSections.Contains(other));
+                        if (completedSD.Distance > _sectionDistance.Distance + 1)
+                        {
+                            completedSD.Distance = _sectionDistance.Distance + 1;
+                        }
+                    }
+                }
+                completed.Add(_sectionDistance);
+            }
+
+            Debug.Log($"-> {completed.Count}");
+            sectionsDistances.AddRange(completed);
+        }
+    }
+
+    public struct SectionsDistance
+    {
+        public Section From { get;}
+        public Section To { get;}
+        public int Distance { get; set; }
+
+        public SectionsDistance(Section from, Section to, int distance = 1)
+        {
+            From = from;
+            To = to;
+            Distance = distance;
+        }
     }
 
     public void DebugSectionsConnectable()
@@ -285,6 +341,16 @@ public class HirachicalMazeGeneratorEditor : Editor
         if(GUILayout.Button("Count Tilemap PhysicsShape"))
         {
             towerMazeGenerator.DebugPhysicsShapeCount();
+        }
+
+        if (GUILayout.Button("FarthestSections"))
+        {
+            List<MazeTowerGenerator.SectionsDistance> sectionsDistances = new();
+            towerMazeGenerator.FindFarthestSections(sectionsDistances);
+            var result = sectionsDistances.OrderBy(sd => sd.Distance).FirstOrDefault();
+            var d_result = sectionsDistances.OrderByDescending(sd => sd.Distance).FirstOrDefault();
+            Debug.Log($"{sectionsDistances.Count} | {result.From} -> {result.To} [{result.Distance}]");
+            Debug.Log($"{sectionsDistances.Count} | {d_result.From} -> {d_result.To} [{d_result.Distance}]");
         }
         /*
         if (GUILayout.Button("debug"))
