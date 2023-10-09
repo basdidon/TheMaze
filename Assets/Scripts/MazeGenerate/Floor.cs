@@ -12,61 +12,27 @@ public class Section
     public Floor Floor { get; }
     MazeTowerGenerator Maze => Floor.Maze;
 
-    public bool IsConnentMainWay { get; set; }
-
     readonly List<Vector2Int> sectionCells;
     public IReadOnlyList<Vector2Int> SectionCells => sectionCells;
-
-    readonly List<Stair> stairs;
-    public IReadOnlyList<Stair> Stairs => stairs;
 
     // portal
     readonly List<PortalData> portals;
     public IReadOnlyList<PortalData> Portals => portals;
 
     public IReadOnlyList<Vector2Int> LocalSectionCells => SectionCells.Select(cell => Floor.WorldToLocalPos(cell)).ToList();
-    public IEnumerable<Vector2Int> OneWayCells => Floor.OneWayCells.Where(cellPos=>IsContain(cellPos));
+    public IEnumerable<Vector2Int> OneWayCells => Floor.DeadEndCells.Where(cellPos=>IsContain(cellPos));
     public IEnumerable<Vector2Int> LocalOneWayCells => OneWayCells.Select(cell => Floor.WorldToLocalPos(cell));
 
     public Section(Floor floor)
     {
         Floor = floor;
         sectionCells = new();
-        stairs = new();
         portals = new();
-        IsConnentMainWay = false;
     }
 
     // Modify
     public void AddCell(Vector2Int cellPos) => sectionCells.Add(cellPos);
     public bool IsContain(Vector2Int cellPos) => sectionCells.Contains(cellPos);
-
-    // ** Connect on OneWayCells
-    public void ConnectUnconnectSection()
-    {
-        // Get unconnect sections
-        List<Section> unconnectList = OneWayConnectableSection.Where(section => !stairs.Any(stair => stair.TargetSection == section)).ToList();
-        
-        if (unconnectList.Count < 1)
-            return;
-        
-        Debug.Log(unconnectList.Count);
-        // pick one of them by random
-        var randSection = unconnectList[Random.Range(0, unconnectList.Count)];
-        // Get possible connect cells
-        var cells = GetOneWayConnectableCells(randSection).ToList();
-        // pick one of cells by random
-        var randCell = cells[Random.Range(0, cells.Count)];
-
-        // add stair to both section
-        AddStair(randCell, randSection.Floor);
-        randSection.AddStair(randCell, Floor);
-    }
-
-    public void AddStair(Vector2Int localPos, Floor targetFloor)
-    {
-        stairs.Add(new(localPos, targetFloor));
-    }
 
     public void AddPortal(Vector2Int fromLocalPos, Vector2Int toLocalPos, Section otherSection)
     {
@@ -106,14 +72,12 @@ public class Section
         return result;
     }
 
-    public bool IsUnconnected => true;//Stairs.Count() == 0;
-
     public List<Vector2Int> UnuseOneWayCells
     {
         get
         {
             return LocalOneWayCells
-                .Where(cellPos => !Stairs.Any(stair => stair.LocalCellPos == cellPos) && !Portals.Any(portal => portal.FromLocalPos == cellPos)).ToList();
+                .Where(cellPos => !Portals.Any(portal => portal.FromLocalPos == cellPos)).ToList();
         }
     }
 
@@ -123,12 +87,10 @@ public class Section
         {
             HashSet<Section> portalConnected = portals.Select(portal => portal.ToSection).ToHashSet();
             return portalConnected;
-            /*HashSet<Section> stairConnected = stairs.Select(stair => stair.TargetSection).ToHashSet();
-            return portalConnected.Union(stairConnected).ToHashSet();*/
         }
     }
 
-    public override string ToString() => $"F: {Floor.GetFloorIndex()} ,S: {Floor.GetSectionIndex(this)}";
+    public override string ToString() => $"[{Floor.GetFloorIndex()}:{Floor.GetSectionIndex(this)}]";
 }
 
 [Serializable]
@@ -144,7 +106,6 @@ public class Floor:IPathMap
 
     readonly Dictionary<Vector2Int, CellData> cellDataMap;
     public IReadOnlyDictionary<Vector2Int, CellData> CellDataMap => cellDataMap;
-    public KeyValuePair<Vector2Int, CellData> MostDepthCell => CellDataMap.OrderByDescending(pair => pair.Value.depth).First();
 
     int LoopLimiter => 4 * FloorRect.width * FloorRect.height;
 
@@ -169,6 +130,7 @@ public class Floor:IPathMap
     public int GetSectionIndex(Section section) => sections.IndexOf(section);
 
     public Section GetSection(Vector2Int worldPos) => sections.FirstOrDefault(section => section.IsContain(worldPos));
+    public IEnumerable<Vector2Int> DeadEndCells => CellDataMap.Where(pair => pair.Value.IsOneWayCell).Select(pair => pair.Key);
 
     /// <returns> index of <c>Section</c> on <c>Floor</c>,or -1 if the element is not found.</returns>
     public int GetLocalSectionIdx(Vector2Int cellPos) => sections.FindIndex(section => section.IsContain(cellPos));
@@ -311,6 +273,5 @@ public class Floor:IPathMap
         return fromCell.IsConnectTo(dir);
     }
 
-    public IEnumerable<Vector2Int> OneWayCells => CellDataMap.Where(pair => pair.Value.IsOneWayCell).Select(pair => pair.Key);
 }
 
