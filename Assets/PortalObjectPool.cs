@@ -24,6 +24,7 @@ public class PortalObjectPool : MonoBehaviour
 
     private void Start()
     {
+        Debug.Log("POP started");
         clones = new();
         for(int i = 0; i < poolSize; i++)
         {
@@ -35,6 +36,7 @@ public class PortalObjectPool : MonoBehaviour
 
     public GameObject GetObject(Vector3 position)
     {
+        Debug.Log("GetObject");
         var clone = clones.Where(clone => !clone.activeInHierarchy).FirstOrDefault();
         if(clone != null)
         {

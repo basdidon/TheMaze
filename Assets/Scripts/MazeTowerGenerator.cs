@@ -8,7 +8,22 @@ using Random = UnityEngine.Random;
 
 public interface IMazeGenerator
 {
+    public void CreateMaze();
+    public PositionRef StartAt { get; }
+    public PositionRef EndAt { get; }
     public IReadOnlyList<Floor> Floors { get; }
+}
+
+public struct PositionRef
+{
+    public Floor Floor { get; }
+    public Vector2Int CellPos { get; }
+
+    public PositionRef(Floor floor, Vector2Int cellPos)
+    {
+        Floor = floor;
+        CellPos = cellPos;
+    }
 }
 
 public class MazeTowerGenerator : MonoBehaviour, IMazeGenerator
@@ -27,7 +42,10 @@ public class MazeTowerGenerator : MonoBehaviour, IMazeGenerator
 
     // Query
     IEnumerable<Section> AllSections => Floors.SelectMany(floor => floor.Sections);
-    
+
+    public PositionRef StartAt { get; private set; }
+    public PositionRef EndAt { get; private set; }
+
     public void CreateMaze()
     {
         floors.Clear();
@@ -39,6 +57,25 @@ public class MazeTowerGenerator : MonoBehaviour, IMazeGenerator
         }
 
         RDFSsection();
+
+        List<SectionsDistance> sectionsDistances = new();
+        FindFarthestSections(sectionsDistances);
+        foreach(var sectionPair in sectionsDistances)
+        {
+            if(sectionPair.From.UnuseOneWayCells.Count > 0 && sectionPair.To.UnuseOneWayCells.Count > 0)
+            {
+                Debug.Log("Found ");
+                var startPos = sectionPair.From.UnuseOneWayCells[Random.Range(0, sectionPair.From.UnuseOneWayCells.Count)];
+                var endPos = sectionPair.To.UnuseOneWayCells[Random.Range(0, sectionPair.To.UnuseOneWayCells.Count)];
+
+                StartAt = new PositionRef(sectionPair.From.Floor,startPos);
+                EndAt = new PositionRef(sectionPair.To.Floor, endPos);
+                break;
+            }
+        }
+
+        Debug.Log($"start at F:{StartAt.Floor.GetFloorIndex()} ,{StartAt.CellPos}");
+        Debug.Log($"end at F:{EndAt.Floor.GetFloorIndex()} ,{EndAt.CellPos}");
     }
 
     bool IsAllConnect()
@@ -60,33 +97,49 @@ public class MazeTowerGenerator : MonoBehaviour, IMazeGenerator
         return false;
     }
 
-    void RDFSsection()
+    void RDFSsection(int MaxLoop = 10)
     {
         //random pick one section
         var allSection = AllSections.ToList();
         var startSection = allSection[Random.Range(0,allSection.Count)];
         var connected = new HashSet<Section>() { startSection };
 
-        var count = 0;
-        while (allSection.Count != connected.Count && count < 500)
+        var loopCount = 0;
+        while (loopCount < MaxLoop)
         {
-            //Debug.Log($"{connected.Count} / {allSection.Count}");
-            count++;
-            
-            var randSections = connected.Where(section => section.UnuseOneWayCells.Count > 0).ToList();
-            var otherSections = allSection.Where(section => section.UnuseOneWayCells.Count > 0).ToList();
+            loopCount++;
 
-            var randSection = randSections[Random.Range(0, randSections.Count)];
-            var otherSection = otherSections[Random.Range(0, otherSections.Count)];
-            if(randSection != otherSection)
+            var count = 0;
+            while (allSection.Count != connected.Count && count < Mathf.Pow(allSection.Count, 2))
             {
-                var randCell = randSection.UnuseOneWayCells[Random.Range(0,randSection.UnuseOneWayCells.Count)];
-                var otherCell = otherSection.UnuseOneWayCells[Random.Range(0, otherSection.UnuseOneWayCells.Count)];
+                //Debug.Log($"{connected.Count} / {allSection.Count}");
+                count++;
 
-                randSection.AddPortal(randCell, otherCell, otherSection);
-                otherSection.AddPortal(otherCell, randCell, randSection);
+                var randSections = connected.Where(section => section.UnuseOneWayCells.Count > 0).ToList();
+                var otherSections = allSection.Where(section => section.UnuseOneWayCells.Count > 0).ToList();
 
-                connected.Add(otherSection);
+                if (randSections.Count == 0)
+                {
+                    Debug.Log($"Can't connect anymore reset ({loopCount})");
+                    break;
+                }
+                var randSection = randSections[Random.Range(0, randSections.Count)];
+                var otherSection = otherSections[Random.Range(0, otherSections.Count)];
+                if (randSection != otherSection)
+                {
+                    var randCell = randSection.UnuseOneWayCells[Random.Range(0, randSection.UnuseOneWayCells.Count)];
+                    var otherCell = otherSection.UnuseOneWayCells[Random.Range(0, otherSection.UnuseOneWayCells.Count)];
+
+                    randSection.AddPortal(randCell, otherCell, otherSection);
+                    otherSection.AddPortal(otherCell, randCell, randSection);
+
+                    connected.Add(otherSection);
+                }
+            }
+
+            if(allSection.Count == connected.Count)
+            {
+                return;
             }
         }
         //Debug.Log($"count : {count}");

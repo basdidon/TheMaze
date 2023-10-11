@@ -10,6 +10,7 @@ using BasDidon.PathFinder2D;
 public class Section
 {
     public Floor Floor { get; }
+    [field: SerializeField] public int FloorIdx { get; private set; }
     MazeTowerGenerator Maze => Floor.Maze;
 
     readonly List<Vector2Int> sectionCells;
@@ -28,6 +29,8 @@ public class Section
         Floor = floor;
         sectionCells = new();
         portals = new();
+
+        FloorIdx = Floor.GetFloorIndex();
     }
 
     // Modify

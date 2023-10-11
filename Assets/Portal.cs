@@ -16,16 +16,13 @@ public class Portal : MonoBehaviour
 
     private void Awake()
     {
+        Grid = FindObjectOfType<Grid>();
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
-
-    private void Start()
-    {
-        Grid = FindObjectOfType<Grid>();
-    }
-
+    
     public void SetDestination(PortalData portalData)
     {
+        PortalData = portalData;
         if (portalData.FromFloor == portalData.ToFloor)
         {
             spriteRenderer.sprite = sameFloorPortalSprite;
@@ -38,21 +35,33 @@ public class Portal : MonoBehaviour
 
     public void Teleport(Transform user)
     {
-        Debug.Log($"teleport to {Grid.GetCellCenterWorld((Vector3Int)PortalData.ToWorldPos)}");
-        user.position = Grid.GetCellCenterWorld((Vector3Int)PortalData.ToWorldPos);
+        if(MazeRenderer.Instance.RenderMode == MazeRenderer.RenderModes.SINGLE)
+        {
+            Debug.Log($"{PortalData.FromFloor.GetFloorIndex()} -> {PortalData.ToFloor.GetFloorIndex()} pos: {(Vector3Int)PortalData.ToLocalPos}");
+            user.transform.position = Grid.GetCellCenterWorld((Vector3Int)PortalData.ToLocalPos);
+
+            ///** Grid.GetCellCenterWorld((Vector3Int)PortalData.ToLocalPos) after below line got unexpected result. so i teleport player first, then swap floor, let's fix it later.
+            MazeRenderer.Instance.RenderFloor(PortalData.ToFloor.GetFloorIndex());
+            Debug.Log($"-> {Grid.GetCellCenterWorld((Vector3Int)PortalData.ToLocalPos)}");
+        }
+        else
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }
 
+[System.Serializable]
 public struct PortalData
 {
-    public Section FromSection { get; }
+    [field:SerializeField] public Section FromSection { get; private set; }
     public Floor FromFloor => FromSection.Floor;
-    public Vector2Int FromLocalPos { get; }
+    [field: SerializeField] public Vector2Int FromLocalPos { get; private set; }
     public Vector2Int FromWorldPos => FromFloor.LocalToWorldPos(FromLocalPos);
 
-    public Section ToSection { get; }
+    [field: SerializeField] public Section ToSection { get; private set; }
     public Floor ToFloor => ToSection.Floor;
-    public Vector2Int ToLocalPos { get; }
+    [field: SerializeField] public Vector2Int ToLocalPos { get; private set; }
     public Vector2Int ToWorldPos => ToFloor.LocalToWorldPos(ToLocalPos);
 
     public PortalData(Section fromSection, Section toSection, Vector2Int fromLocalPos, Vector2Int toLocalPos)

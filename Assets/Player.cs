@@ -33,7 +33,7 @@ public class Player : MonoBehaviour
 
         InteractActionRef.action.performed += _ =>
         {
-            Debug.Log("E");
+            Debug.Log("Space");
             if(Portal != null)
             {
                 Portal.Teleport(transform);

@@ -136,6 +136,7 @@ public class MazeRenderer : MonoBehaviour
                     portalClones.Add(clone);
                     if (clone.TryGetComponent(out Portal portal))
                     {
+                        Debug.Log($"set des to {portalData.ToLocalPos}");
                         portal.SetDestination(portalData);
                     }
 
@@ -188,13 +189,16 @@ public class MazeRenderer : MonoBehaviour
         {
             foreach (var portalData in section.Portals)
             {
-                var clone = PortalObjectPool.Instance.GetObject(Grid.GetCellCenterWorld((Vector3Int)floor.LocalToWorldPos(portalData.FromLocalPos)));
+                Debug.Log(portalData);
+                var clone = PortalObjectPool.Instance.GetObject(Grid.GetCellCenterWorld((Vector3Int)portalData.FromLocalPos));
                 if (clone == null)
                     return;
 
                 portalClones.Add(clone);
                 if (clone.TryGetComponent(out Portal portal))
                 {
+                    Debug.Log($"set des to {portalData.ToWorldPos}");
+
                     portal.SetDestination(portalData);
                 }
 
