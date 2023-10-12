@@ -11,6 +11,8 @@ public class MazeRenderer : MonoBehaviour
     // Instance
     public static MazeRenderer Instance { get; private set; }
 
+    [field: SerializeField] int FloorOffset { get; set; } = 1;
+
     // Mode
     public enum RenderModes { SINGLE, ALL }
     [SerializeField] RenderModes renderMode = RenderModes.SINGLE;
@@ -48,7 +50,9 @@ public class MazeRenderer : MonoBehaviour
     [field: SerializeField] public MazeTile MazeTile { get; private set; }
 
     // scene objects
-    [SerializeField] public List<GameObject> portalClones;
+    [field: SerializeField] public GameObject FinishLinePrefab { get;private set; }
+    GameObject finishLineClone;
+    List<GameObject> portalClones;
 
     private void Awake()
     {
@@ -62,6 +66,8 @@ public class MazeRenderer : MonoBehaviour
         }
 
         Generator = GetComponent<MazeTowerGenerator>();
+        finishLineClone = Instantiate(FinishLinePrefab,transform);
+        finishLineClone.SetActive(false);
     }
 
     private void Start()
@@ -96,17 +102,30 @@ public class MazeRenderer : MonoBehaviour
 
         foreach (var floor in Floors)
         {
+            var floorIdx = floor.GetFloorIndex();
+            var _offset = ((FloorOffset + Generator.MazeSize.x) * floorIdx * Vector3Int.right);
+
+            if (Generator.EndAt.Floor.GetFloorIndex() == floorIdx)
+            {
+                finishLineClone.SetActive(true);
+                finishLineClone.transform.position = Grid.GetCellCenterWorld((Vector3Int)Generator.EndAt.CellPos +_offset);
+            }
+            else
+            {
+                finishLineClone.SetActive(false);
+            }
+
             foreach (var rectPos in floor.FloorRect.allPositionsWithin)
             {
-                Vector3Int cellPos = (Vector3Int)rectPos;
+                Vector3Int renderPos = (Vector3Int)rectPos + _offset;
 
                 // Ground
-                GroundTileMap.SetTile(cellPos, GroundTile);
+                GroundTileMap.SetTile(renderPos, GroundTile);
 
                 // Path
                 if (floor.TryGetCellData(rectPos, out CellData cellData))
                 {
-                    PathTileMap.SetTile(cellPos, MazeTile.GetTile(cellData.connection));
+                    PathTileMap.SetTile(renderPos, MazeTile.GetTile(cellData.connection));
                 }
 
                 // section
@@ -121,15 +140,15 @@ public class MazeRenderer : MonoBehaviour
                     }
                 }
 
-                SectionTileMap.SetTile(cellPos, SectionTile);
-                SectionTileMap.SetColor(cellPos, tileColor);
+                SectionTileMap.SetTile(renderPos, SectionTile);
+                SectionTileMap.SetColor(renderPos, tileColor);
             }
 
             foreach (var section in floor.Sections)
             {
                 foreach (var portalData in section.Portals)
                 {
-                    var clone = PortalObjectPool.Instance.GetObject(Grid.GetCellCenterWorld((Vector3Int)floor.LocalToWorldPos(portalData.FromLocalPos)));
+                    var clone = PortalObjectPool.Instance.GetObject(Grid.GetCellCenterWorld((Vector3Int)portalData.FromLocalPos)+ _offset);
                     if (clone == null)
                         return;
 
@@ -152,6 +171,16 @@ public class MazeRenderer : MonoBehaviour
 
         ClearTileMaps();
         ClearPortals();
+
+        if(Generator.EndAt.Floor.GetFloorIndex() == floorIdx)
+        {
+            finishLineClone.SetActive(true);
+            finishLineClone.transform.position = Grid.GetCellCenterWorld((Vector3Int) Generator.EndAt.CellPos);
+        }
+        else
+        {
+            finishLineClone.SetActive(false);
+        }
 
         var floor = Floors[floorIdx];
 
@@ -189,7 +218,6 @@ public class MazeRenderer : MonoBehaviour
         {
             foreach (var portalData in section.Portals)
             {
-                Debug.Log(portalData);
                 var clone = PortalObjectPool.Instance.GetObject(Grid.GetCellCenterWorld((Vector3Int)portalData.FromLocalPos));
                 if (clone == null)
                     return;
@@ -197,8 +225,6 @@ public class MazeRenderer : MonoBehaviour
                 portalClones.Add(clone);
                 if (clone.TryGetComponent(out Portal portal))
                 {
-                    Debug.Log($"set des to {portalData.ToWorldPos}");
-
                     portal.SetDestination(portalData);
                 }
 
@@ -219,8 +245,6 @@ public class MazeRendererEditor : Editor
         var renderer = (MazeRenderer)target;
 
         if (renderer == null) return;
-
-        DrawDefaultInspector();
 
         if (Application.isPlaying)
         {
@@ -244,6 +268,8 @@ public class MazeRendererEditor : Editor
                 GUILayout.EndHorizontal();
             }
         }
+
+        DrawDefaultInspector();
     }
 }
 

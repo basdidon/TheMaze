@@ -23,5 +23,9 @@ public class LevelManager : MonoBehaviour
         MazeTowerGenerator.CreateMaze();
         MazeRenderer.RenderFloor(MazeTowerGenerator.StartAt.Floor.GetFloorIndex());
         Player.transform.position = Grid.GetCellCenterWorld((Vector3Int) MazeTowerGenerator.StartAt.CellPos);
+
+        // move main camera to center of maze
+        Camera.main.transform.position = (Vector3)MazeTowerGenerator.Floors[0].FloorRect.center + (Vector3.back * 10);
+        Camera.main.orthographicSize = MazeTowerGenerator.MazeSize.z / 2;
     }
 }

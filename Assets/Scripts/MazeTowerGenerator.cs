@@ -8,6 +8,7 @@ using Random = UnityEngine.Random;
 
 public interface IMazeGenerator
 {
+    public Vector3Int MazeSize { get; }
     public void CreateMaze();
     public PositionRef StartAt { get; }
     public PositionRef EndAt { get; }
@@ -29,11 +30,9 @@ public struct PositionRef
 public class MazeTowerGenerator : MonoBehaviour, IMazeGenerator
 {
     // Floor Properties
-    [field: SerializeField] int TowerFloor { get; set; }
+    [field: SerializeField] public Vector3Int MazeSize { get; private set; }
+
     [field: SerializeField] int MaxSection { get; set; }
-    [field: SerializeField] int FloorWidth { get; set; } = 20;
-    [field: SerializeField] int FloorHeight { get; set; } = 20;
-    [field: SerializeField] int FloorOffset { get; set; } = 1;
 
     // Floor List
     [field: SerializeField] List<Floor> floors;
@@ -50,9 +49,9 @@ public class MazeTowerGenerator : MonoBehaviour, IMazeGenerator
     {
         floors.Clear();
 
-        for (int i = 0; i < TowerFloor; i++)
+        for (int i = 0; i < MazeSize.y; i++)
         {
-            var floor = new Floor(this, new RectInt(i * (FloorWidth + FloorOffset), 0, FloorWidth, FloorHeight), MaxSection);
+            var floor = new Floor(this, new RectInt(0, 0, MazeSize.x, MazeSize.z), MaxSection);
             floors.Add(floor);
         }
 
@@ -60,22 +59,24 @@ public class MazeTowerGenerator : MonoBehaviour, IMazeGenerator
 
         List<SectionsDistance> sectionsDistances = new();
         FindFarthestSections(sectionsDistances);
-        foreach(var sectionPair in sectionsDistances)
+        foreach(var sectionPair in sectionsDistances.OrderByDescending(sectionPair=>sectionPair.Distance))
         {
             if(sectionPair.From.UnuseOneWayCells.Count > 0 && sectionPair.To.UnuseOneWayCells.Count > 0)
             {
-                Debug.Log("Found ");
                 var startPos = sectionPair.From.UnuseOneWayCells[Random.Range(0, sectionPair.From.UnuseOneWayCells.Count)];
                 var endPos = sectionPair.To.UnuseOneWayCells[Random.Range(0, sectionPair.To.UnuseOneWayCells.Count)];
 
                 StartAt = new PositionRef(sectionPair.From.Floor,startPos);
                 EndAt = new PositionRef(sectionPair.To.Floor, endPos);
+
+
+                Debug.Log($"start at F:{StartAt.Floor.GetFloorIndex()} ,{StartAt.CellPos}");
+                Debug.Log($"end at F:{EndAt.Floor.GetFloorIndex()} ,{EndAt.CellPos}");
+                Debug.Log($"distance is : {sectionPair.Distance}");
                 break;
             }
         }
 
-        Debug.Log($"start at F:{StartAt.Floor.GetFloorIndex()} ,{StartAt.CellPos}");
-        Debug.Log($"end at F:{EndAt.Floor.GetFloorIndex()} ,{EndAt.CellPos}");
     }
 
     bool IsAllConnect()
@@ -158,7 +159,7 @@ public class MazeTowerGenerator : MonoBehaviour, IMazeGenerator
 
             foreach (var other in startFrom.ConnectedSections)
             {
-                Debug.Log($"{startFrom} -> {other} : 1 added.");
+                //Debug.Log($"{startFrom} -> {other} : 1 added.");
                 queued.Add(new SectionsDistance(startFrom, other));
             }
 
@@ -192,7 +193,7 @@ public class MazeTowerGenerator : MonoBehaviour, IMazeGenerator
                 completed.Add(_sectionDistance);
             }
 
-            Debug.Log($"-> {completed.Count}");
+            //Debug.Log($"-> {completed.Count}");
             sectionsDistances.AddRange(completed);
         }
     }

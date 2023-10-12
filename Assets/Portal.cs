@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using DG.Tweening;
 
 [RequireComponent(typeof(Collider2D))]
 public class Portal : MonoBehaviour
@@ -11,13 +12,18 @@ public class Portal : MonoBehaviour
 
     public PortalData PortalData;
 
+    [ColorUsage(false, true)]
+    public Color diffFloorColor;
     [SerializeField] public Sprite diffFloorPortalSprite;
+    [ColorUsage(false, true)]
+    public Color sameFloorColor;
     [SerializeField] public Sprite sameFloorPortalSprite;
 
     private void Awake()
     {
         Grid = FindObjectOfType<Grid>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        DOTween.SetTweensCapacity(500, 50);
     }
     
     public void SetDestination(PortalData portalData)
@@ -26,10 +32,13 @@ public class Portal : MonoBehaviour
         if (portalData.FromFloor == portalData.ToFloor)
         {
             spriteRenderer.sprite = sameFloorPortalSprite;
+            spriteRenderer.material.SetColor("_EmissionColor", diffFloorColor);
         }
         else
         {
             spriteRenderer.sprite = diffFloorPortalSprite;
+            spriteRenderer.material.SetColor("_EmissionColor", sameFloorColor);
+
         }
     }
 
@@ -48,6 +57,19 @@ public class Portal : MonoBehaviour
         {
             throw new System.NotImplementedException();
         }
+    }
+
+    private void OnEnable()
+    {
+        Rotate();
+    }
+
+    void Rotate()
+    {
+        transform.DOLocalRotate(new Vector3(0, 0, 360), 30, RotateMode.FastBeyond360)
+            .SetRelative(true)
+            .SetLoops(-1,LoopType.Restart)
+            .SetEase(Ease.Linear);
     }
 }
 

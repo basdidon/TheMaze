@@ -36,7 +36,6 @@ public class PortalObjectPool : MonoBehaviour
 
     public GameObject GetObject(Vector3 position)
     {
-        Debug.Log("GetObject");
         var clone = clones.Where(clone => !clone.activeInHierarchy).FirstOrDefault();
         if(clone != null)
         {
