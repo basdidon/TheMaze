@@ -46,12 +46,12 @@ public class Portal : MonoBehaviour
     {
         if(MazeRenderer.Instance.RenderMode == MazeRenderer.RenderModes.SINGLE)
         {
-            Debug.Log($"{PortalData.FromFloor.GetFloorIndex()} -> {PortalData.ToFloor.GetFloorIndex()} pos: {(Vector3Int)PortalData.ToLocalPos}");
-            user.transform.position = Grid.GetCellCenterWorld((Vector3Int)PortalData.ToLocalPos);
+            Debug.Log($"{PortalData.FromFloor.FloorIndex} -> {PortalData.ToFloor.FloorIndex} pos: {(Vector3Int)PortalData.ToPos}");
+            user.transform.position = Grid.GetCellCenterWorld((Vector3Int)PortalData.ToPos);
 
             ///** Grid.GetCellCenterWorld((Vector3Int)PortalData.ToLocalPos) after below line got unexpected result. so i teleport player first, then swap floor, let's fix it later.
-            MazeRenderer.Instance.RenderFloor(PortalData.ToFloor.GetFloorIndex());
-            Debug.Log($"-> {Grid.GetCellCenterWorld((Vector3Int)PortalData.ToLocalPos)}");
+            MazeRenderer.Instance.RenderFloor(PortalData.ToFloor.FloorIndex);
+            Debug.Log($"-> {Grid.GetCellCenterWorld((Vector3Int)PortalData.ToPos)}");
         }
         else
         {
@@ -78,19 +78,17 @@ public struct PortalData
 {
     [field:SerializeField] public Section FromSection { get; private set; }
     public Floor FromFloor => FromSection.Floor;
-    [field: SerializeField] public Vector2Int FromLocalPos { get; private set; }
-    public Vector2Int FromWorldPos => FromFloor.LocalToWorldPos(FromLocalPos);
+    [field: SerializeField] public Vector2Int FromPos { get; private set; }
 
     [field: SerializeField] public Section ToSection { get; private set; }
     public Floor ToFloor => ToSection.Floor;
-    [field: SerializeField] public Vector2Int ToLocalPos { get; private set; }
-    public Vector2Int ToWorldPos => ToFloor.LocalToWorldPos(ToLocalPos);
+    [field: SerializeField] public Vector2Int ToPos { get; private set; }
 
-    public PortalData(Section fromSection, Section toSection, Vector2Int fromLocalPos, Vector2Int toLocalPos)
+    public PortalData(Section fromSection, Section toSection, Vector2Int fromPos, Vector2Int toPos)
     {
         FromSection = fromSection;
         ToSection = toSection;
-        FromLocalPos = fromLocalPos;
-        ToLocalPos = toLocalPos;
+        FromPos = fromPos;
+        ToPos = toPos;
     }
 }

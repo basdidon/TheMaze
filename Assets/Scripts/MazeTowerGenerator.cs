@@ -55,7 +55,7 @@ public class MazeTowerGenerator : MonoBehaviour, IMazeGenerator
             floors.Add(floor);
         }
 
-        RDFSsection();
+        ConnectAllSection();
 
         List<SectionsDistance> sectionsDistances = new();
         FindFarthestSections(sectionsDistances);
@@ -70,8 +70,8 @@ public class MazeTowerGenerator : MonoBehaviour, IMazeGenerator
                 EndAt = new PositionRef(sectionPair.To.Floor, endPos);
 
 
-                Debug.Log($"start at F:{StartAt.Floor.GetFloorIndex()} ,{StartAt.CellPos}");
-                Debug.Log($"end at F:{EndAt.Floor.GetFloorIndex()} ,{EndAt.CellPos}");
+                Debug.Log($"start at F:{StartAt.Floor.FloorIndex} ,{StartAt.CellPos}");
+                Debug.Log($"end at F:{EndAt.Floor.FloorIndex} ,{EndAt.CellPos}");
                 Debug.Log($"distance is : {sectionPair.Distance}");
                 break;
             }
@@ -79,26 +79,7 @@ public class MazeTowerGenerator : MonoBehaviour, IMazeGenerator
 
     }
 
-    bool IsAllConnect()
-    {
-        HashSet<Section> queued = new() { floors[0].Sections[0]};
-        HashSet<Section> visited = new();
-
-        while(queued.Count > 0)
-        {
-            var section = queued.Last();
-            queued.Remove(section);
-            visited.Add(section);
-
-            // add other section that connect to this section to queued
-        }
-
-        if (visited.Count == floors.SelectMany(floor => floor.Sections).Count())
-            return true;
-        return false;
-    }
-
-    void RDFSsection(int MaxLoop = 10)
+    void ConnectAllSection(int MaxLoop = 10)
     {
         //random pick one section
         var allSection = AllSections.ToList();
@@ -143,8 +124,6 @@ public class MazeTowerGenerator : MonoBehaviour, IMazeGenerator
                 return;
             }
         }
-        //Debug.Log($"count : {count}");
-
     }
 
     public void FindFarthestSections(List<SectionsDistance> sectionsDistances)
@@ -159,7 +138,6 @@ public class MazeTowerGenerator : MonoBehaviour, IMazeGenerator
 
             foreach (var other in startFrom.ConnectedSections)
             {
-                //Debug.Log($"{startFrom} -> {other} : 1 added.");
                 queued.Add(new SectionsDistance(startFrom, other));
             }
 
@@ -176,7 +154,6 @@ public class MazeTowerGenerator : MonoBehaviour, IMazeGenerator
 
                     if (!isInQueued && !isInCompleted)
                     {
-                        Debug.Log($"{startFrom} to {other} : {_sectionDistance.Distance + 1} added.");
                         queued.Add(new SectionsDistance(startFrom, other, _sectionDistance.Distance + 1));
                     }
                     else if (isInCompleted)
@@ -184,7 +161,6 @@ public class MazeTowerGenerator : MonoBehaviour, IMazeGenerator
                         var completedSD = completed.Find(sd => sd.To.ConnectedSections.Contains(other));
                         if (completedSD.Distance > _sectionDistance.Distance + 1)
                         {
-                            Debug.Log($"{completedSD.To} update distance from {completedSD.Distance} to {_sectionDistance.Distance + 1} ");
                             completedSD.Distance = _sectionDistance.Distance + 1;
                         }
                     }
@@ -193,7 +169,6 @@ public class MazeTowerGenerator : MonoBehaviour, IMazeGenerator
                 completed.Add(_sectionDistance);
             }
 
-            //Debug.Log($"-> {completed.Count}");
             sectionsDistances.AddRange(completed);
         }
     }

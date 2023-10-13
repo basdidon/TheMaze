@@ -83,7 +83,6 @@ public class TileRulePickerPropotyDrawer : PropertyDrawer
             rulePicker.AddToClassList("condition-box");
             if (keyword != string.Empty)
             {
-                Debug.Log(keyword);
                 var propertyName = $"rule_{keyword}";
                 rulePicker.sprite = GetRulePickerSprite(property.FindPropertyRelative(propertyName).enumValueIndex);
                 rulePicker.RegisterCallback<MouseDownEvent>(ev =>

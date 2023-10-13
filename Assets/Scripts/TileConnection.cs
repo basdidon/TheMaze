@@ -6,35 +6,17 @@ using UnityEngine.UIElements;
 [Serializable]
 public struct TileConnection
 {
-    [SerializeField] public bool IsConnectN { get; set; }
-    [SerializeField] public bool IsConnectS { get; set; }
-    [SerializeField] public bool IsConnectW { get; set; }
-    [SerializeField] public bool IsConnectE { get; set; }
+    public bool IsConnectN { get; set; }
+    public bool IsConnectS { get; set; }
+    public bool IsConnectW { get; set; }
+    public bool IsConnectE { get; set; }
 
-    public TileConnection(bool n = false, bool w = false, bool e = false, bool s = false)
+    public TileConnection(bool isConnectN, bool isConnectS, bool isConnectW, bool isConnectE)
     {
-        IsConnectN = n;
-        IsConnectW = w;
-        IsConnectE = e;
-        IsConnectS = s;
-    }
-
-    public TileConnection(int code)
-    {
-        IsConnectN = ((code >> 3) & 1) == 1;
-        IsConnectS = ((code >> 2) & 1) == 1;
-        IsConnectW = ((code >> 1) & 1) == 1;
-        IsConnectE = (code & 1) == 1;
-    }
-
-    public int GetConditionCode()
-    {
-        int code = 0;
-        code |= (IsConnectN ? 1 : 0) << 3;
-        code |= (IsConnectS ? 1 : 0) << 2;
-        code |= (IsConnectW ? 1 : 0) << 1;
-        code |= (IsConnectE ? 1 : 0);
-        return code;
+        IsConnectN = isConnectN;
+        IsConnectS = isConnectS;
+        IsConnectW = isConnectW;
+        IsConnectE = isConnectE;
     }
 
     public override string ToString()

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 
 [CreateAssetMenu(menuName ="MazeTile")]
-public class MazeTile : ScriptableObject
+public class TileSelector : ScriptableObject
 {
     [Header("DefaultTile")]
     public Tile DefaultTile;
@@ -12,12 +12,12 @@ public class MazeTile : ScriptableObject
     [Header("Condition")]
     [SerializeField] TileCondition[] TileConditions;
 
-    public Tile GetTile(TileConnection connection)
+    public Tile GetMacthingTile(TileConnection connection)
     {
         Tile tile = DefaultTile;
         foreach(var condition in TileConditions)
         {
-            if (condition.rule4Dir.IsMacth(connection))
+            if (condition.rulePicker.IsMacth(connection))
             {
                 tile = condition.Tile;
             }

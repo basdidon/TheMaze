@@ -4,151 +4,49 @@ using UnityEngine;
 using System;
 using Random = UnityEngine.Random;
 using System.Linq;
-using BasDidon.PathFinder2D;
 
 [Serializable]
-public class Section
-{
-    public Floor Floor { get; }
-    [field: SerializeField] public int FloorIdx { get; private set; }
-    MazeTowerGenerator Maze => Floor.Maze;
-
-    readonly List<Vector2Int> sectionCells;
-    public IReadOnlyList<Vector2Int> SectionCells => sectionCells;
-
-    // portal
-    readonly List<PortalData> portals;
-    public IReadOnlyList<PortalData> Portals => portals;
-
-    public IReadOnlyList<Vector2Int> LocalSectionCells => SectionCells.Select(cell => Floor.WorldToLocalPos(cell)).ToList();
-    public IEnumerable<Vector2Int> OneWayCells => Floor.DeadEndCells.Where(cellPos=>IsContain(cellPos));
-    public IEnumerable<Vector2Int> LocalOneWayCells => OneWayCells.Select(cell => Floor.WorldToLocalPos(cell));
-
-    public Section(Floor floor)
-    {
-        Floor = floor;
-        sectionCells = new();
-        portals = new();
-
-        FloorIdx = Floor.GetFloorIndex();
-    }
-
-    // Modify
-    public void AddCell(Vector2Int cellPos) => sectionCells.Add(cellPos);
-    public bool IsContain(Vector2Int cellPos) => sectionCells.Contains(cellPos);
-
-    public void AddPortal(Vector2Int fromLocalPos, Vector2Int toLocalPos, Section otherSection)
-    {
-        Debug.Log($"AddCell portal {this} to {otherSection}");
-        portals.Add(new(this, otherSection, fromLocalPos, toLocalPos));
-    }
-
-    // Query
-    public IEnumerable<Section> ConnectableSection => OtherFloorSections.Where(section => LocalSectionCells.Intersect(section.LocalSectionCells).Any());
-    public IEnumerable<Section> OneWayConnectableSection => OtherFloorSections.Where(section => GetOneWayConnectableCells(section).Any());
-
-    public IEnumerable<Vector2Int> GetOneWayConnectableCells(Section section) => LocalOneWayCells.Intersect(section.LocalOneWayCells);
-
-    public IEnumerable<Floor> OthersFloor => Maze.Floors.Where(floor => floor != Floor);
-    public IEnumerable<Section> OtherFloorSections => OthersFloor.SelectMany(floor => floor.Sections);
-
-    public List<Vector2Int> FindPathFarthestOneWayCells()
-    {
-        var cellPosPairs = (
-            from fromCellPos in OneWayCells.Select((cellPos, index) => new { CellPos = cellPos, Index = index })
-            from toCellPos in OneWayCells.Skip(fromCellPos.Index + 1)
-            select new { FromCellPos = fromCellPos.CellPos, ToCellPos = toCellPos }
-        ).ToList();
-
-        List<Vector2Int> result = null;
-        cellPosPairs.ForEach(cellPair =>
-        {
-            if(PathFinder.TryFindPath(Floor,cellPair.FromCellPos,cellPair.ToCellPos,Floor.neighborDirs.ToList(),out List<Vector2Int> resultPath))
-            {
-                if (result == null || result.Count < resultPath.Count)
-                {
-                    result = resultPath;
-                }
-            }
-        });
-
-        return result;
-    }
-
-    public List<Vector2Int> UnuseOneWayCells
-    {
-        get
-        {
-            return LocalOneWayCells
-                .Where(cellPos => !Portals.Any(portal => portal.FromLocalPos == cellPos)).ToList();
-        }
-    }
-
-    public HashSet<Section> ConnectedSections
-    {
-        get
-        {
-            HashSet<Section> portalConnected = portals.Select(portal => portal.ToSection).ToHashSet();
-            return portalConnected;
-        }
-    }
-
-    public override string ToString() => $"[{Floor.GetFloorIndex()}:{Floor.GetSectionIndex(this)}]";
-}
-
-[Serializable]
-public class Floor:IPathMap
+public class Floor
 {
     public MazeTowerGenerator Maze { get; }
     public RectInt FloorRect { get; }
 
-    [field: SerializeField] public int NumSection { get; private set; }
-
+    // Sections on this floor
     readonly List<Section> sections;
     public IReadOnlyList<Section> Sections => sections;
 
+    // CellDataMap on this floor
     readonly Dictionary<Vector2Int, CellData> cellDataMap;
     public IReadOnlyDictionary<Vector2Int, CellData> CellDataMap => cellDataMap;
-
-    int LoopLimiter => 4 * FloorRect.width * FloorRect.height;
 
     public Floor(MazeTowerGenerator maze, RectInt floorRect, int numSection)
     {
         Maze = maze;
         FloorRect = floorRect;
-        NumSection = numSection > 0 ? numSection : 1;
+        var _numSection = numSection > 0 ? numSection : 1;
 
         sections = new();
-        for (int i = 0; i < NumSection; i++)
+        for (int i = 0; i < _numSection; i++)
         {
             sections.Add(new Section(this));
         }
 
         cellDataMap = new();
 
-        PlaceSectionRoot();
+        CreateMazeFloor();
     }
 
-    public int GetFloorIndex() => Maze.GetFloorIndex(this);
-    public int GetSectionIndex(Section section) => sections.IndexOf(section);
+    public int FloorIndex => Maze.GetFloorIndex(this);
+    public int GetSectionIdx(Section section) => sections.IndexOf(section);
+    public int GetSectionIdx(Vector2Int cellPos) => sections.FindIndex(section => section.IsContain(cellPos));
 
     public Section GetSection(Vector2Int worldPos) => sections.FirstOrDefault(section => section.IsContain(worldPos));
-    public IEnumerable<Vector2Int> DeadEndCells => CellDataMap.Where(pair => pair.Value.IsOneWayCell).Select(pair => pair.Key);
+    public IEnumerable<Vector2Int> OneWayCells => CellDataMap.Where(pair => pair.Value.IsOneWayCell).Select(pair => pair.Key);
 
-    /// <returns> index of <c>Section</c> on <c>Floor</c>,or -1 if the element is not found.</returns>
-    public int GetLocalSectionIdx(Vector2Int cellPos) => sections.FindIndex(section => section.IsContain(cellPos));
-
-    // Convertor
-    public Vector2Int LocalToWorldPos(Vector2Int localPos) => localPos + FloorRect.position;
-    public Vector2Int WorldToLocalPos(Vector2Int worldPos) => worldPos - FloorRect.position;
-
-
-    List<Vector2Int> visitedList;
-    List<Vector2Int> finishList;
-    void PlaceSectionRoot()
+    void CreateMazeFloor()
     {
-        Vector2Int[] StartAts = new Vector2Int[NumSection];
-        for (int i = 0; i < NumSection; i++)
+        Vector2Int[] StartAts = new Vector2Int[Sections.Count];
+        for (int i = 0; i < Sections.Count; i++)
         {
             Vector2Int randPos;
             do
@@ -161,9 +59,10 @@ public class Floor:IPathMap
         }
 
         // start create
-        visitedList = new(StartAts);
-        finishList = new();
+        List<Vector2Int> visitedList = new(StartAts);
+        List<Vector2Int>  finishList = new();
 
+        int LoopLimiter = 4 * FloorRect.width * FloorRect.height;
         var loopCount = 0;
 
         while (visitedList.Count > 0 && loopCount < LoopLimiter)
@@ -171,9 +70,9 @@ public class Floor:IPathMap
             loopCount++;
             Vector2Int toSearchCell;
 
-            if (NumSection > 1)
+            if (Sections.Count > 1)
             {
-                var randSection = Random.Range(0, NumSection);
+                var randSection = Random.Range(0, Sections.Count);
                 // search by last cell of random section
                 toSearchCell = visitedList.LastOrDefault(cell => sections[randSection].IsContain(cell));
             }
@@ -182,8 +81,13 @@ public class Floor:IPathMap
                 toSearchCell = visitedList.Last();
             }
 
-            if (RandomUnvisitNode(toSearchCell, out Vector2Int result))
+            var nodes = neighborDirs.Select(dir => dir + toSearchCell)
+                .Where(pos => !IsOutOfBound(pos) && !visitedList.Contains(pos) && !finishList.Contains(pos))
+                .ToArray();
+
+            if (nodes.Length > 0)
             {
+                var result = nodes[Random.Range(0, nodes.Length)];
                 Connect(toSearchCell, result);
                 visitedList.Add(result);
             }
@@ -241,19 +145,6 @@ public class Floor:IPathMap
         Vector2Int.right,
     };
 
-    bool RandomUnvisitNode(Vector2Int pos, out Vector2Int result)
-    {
-        result = Vector2Int.zero;
-        var nodes = neighborDirs.Select(dir => dir + pos)
-            .Where(pos => !IsOutOfBound(pos) && !visitedList.Contains(pos) && !finishList.Contains(pos))
-            .ToArray();
-
-        if (nodes.Length == 0)
-            return false;
-
-        result = nodes[Random.Range(0, nodes.Length)];
-        return true;
-    }
 
     bool IsOutOfBound(Vector2Int pos)
     {
@@ -264,17 +155,5 @@ public class Floor:IPathMap
 
         return false;
     }
-
-    public bool CanMoveTo(Vector2Int from, Vector2Int to)
-    {
-        if (!cellDataMap.TryGetValue(from, out CellData fromCell))
-            return false;
-        if (!cellDataMap.TryGetValue(to, out CellData toCell))
-            return false;
-
-        var dir = to - from;
-        return fromCell.IsConnectTo(dir);
-    }
-
 }
 

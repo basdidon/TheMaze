@@ -8,28 +8,14 @@ using UnityEngine.UIElements;
 [Serializable]
 public class TileCondition
 {
-    //public Sprite Sprite;
     public Tile Tile;
-    public TileRulePicker rule4Dir;
-    /*
-    public bool TryGetSprite(TileConnection connection, out Sprite sprite)
-    {
-        sprite = null;
-
-        if (rule4Dir.IsMacth(connection))
-        {
-            sprite = Sprite;
-            return true;
-        }
-
-        return false;
-    }*/
+    public TileRulePicker rulePicker;
 
     public bool TryGetTile(TileConnection connection, out Tile tile)
     {
         tile = null;
 
-        if(rule4Dir.IsMacth(connection))
+        if(rulePicker.IsMacth(connection))
         {
             tile = Tile;
             return true;

@@ -42,11 +42,6 @@ public struct CellData
         return this;
     }
 
-    public CellData SetConnectByDir(Vector3Int dir, bool value = true)
-    {
-        return SetConnectByDir((Vector2Int)dir, value);
-    }
-
     public bool IsConnectTo(Vector2Int dir)
     {
         if (dir == Vector2Int.up)
@@ -69,11 +64,6 @@ public struct CellData
         {
             throw new Exception("Unexpected value");
         }
-    }
-
-    internal CellData SetDepth(int? v)
-    {
-        throw new NotImplementedException();
     }
 
     public bool IsOneWayCell

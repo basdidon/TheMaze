@@ -47,7 +47,7 @@ public class MazeRenderer : MonoBehaviour
         Color.yellow
     };
 
-    [field: SerializeField] public MazeTile MazeTile { get; private set; }
+    [field: SerializeField] public TileSelector MazeTile { get; private set; }
 
     // scene objects
     [field: SerializeField] public GameObject FinishLinePrefab { get;private set; }
@@ -102,10 +102,10 @@ public class MazeRenderer : MonoBehaviour
 
         foreach (var floor in Floors)
         {
-            var floorIdx = floor.GetFloorIndex();
+            var floorIdx = floor.FloorIndex;
             var _offset = ((FloorOffset + Generator.MazeSize.x) * floorIdx * Vector3Int.right);
 
-            if (Generator.EndAt.Floor.GetFloorIndex() == floorIdx)
+            if (Generator.EndAt.Floor.FloorIndex == floorIdx)
             {
                 finishLineClone.SetActive(true);
                 finishLineClone.transform.position = Grid.GetCellCenterWorld((Vector3Int)Generator.EndAt.CellPos +_offset);
@@ -125,13 +125,13 @@ public class MazeRenderer : MonoBehaviour
                 // Path
                 if (floor.TryGetCellData(rectPos, out CellData cellData))
                 {
-                    PathTileMap.SetTile(renderPos, MazeTile.GetTile(cellData.connection));
+                    PathTileMap.SetTile(renderPos, MazeTile.GetMacthingTile(cellData.connection));
                 }
 
                 // section
                 Color tileColor = Color.black;
 
-                var sectionIdx = floor.GetLocalSectionIdx(rectPos);
+                var sectionIdx = floor.GetSectionIdx(rectPos);
                 if (sectionIdx != -1)
                 {
                     if (sectionIdx < SectionColors.Length)
@@ -148,14 +148,14 @@ public class MazeRenderer : MonoBehaviour
             {
                 foreach (var portalData in section.Portals)
                 {
-                    var clone = PortalObjectPool.Instance.GetObject(Grid.GetCellCenterWorld((Vector3Int)portalData.FromLocalPos)+ _offset);
+                    var clone = PortalObjectPool.Instance.GetObject(Grid.GetCellCenterWorld((Vector3Int)portalData.FromPos)+ _offset);
                     if (clone == null)
                         return;
 
                     portalClones.Add(clone);
                     if (clone.TryGetComponent(out Portal portal))
                     {
-                        Debug.Log($"set des to {portalData.ToLocalPos}");
+                        Debug.Log($"set des to {portalData.ToPos}");
                         portal.SetDestination(portalData);
                     }
 
@@ -172,7 +172,7 @@ public class MazeRenderer : MonoBehaviour
         ClearTileMaps();
         ClearPortals();
 
-        if(Generator.EndAt.Floor.GetFloorIndex() == floorIdx)
+        if(Generator.EndAt.Floor.FloorIndex == floorIdx)
         {
             finishLineClone.SetActive(true);
             finishLineClone.transform.position = Grid.GetCellCenterWorld((Vector3Int) Generator.EndAt.CellPos);
@@ -195,13 +195,13 @@ public class MazeRenderer : MonoBehaviour
             // Path
             if (floor.TryGetCellData(rectPos, out CellData cellData))
             {
-                PathTileMap.SetTile(localCellPos, MazeTile.GetTile(cellData.connection));
+                PathTileMap.SetTile(localCellPos, MazeTile.GetMacthingTile(cellData.connection));
             }
 
             // section
             Color tileColor = Color.black;
 
-            var sectionIdx = floor.GetLocalSectionIdx(rectPos);
+            var sectionIdx = floor.GetSectionIdx(rectPos);
             if (sectionIdx != -1)
             {
                 if (sectionIdx < SectionColors.Length)
@@ -218,7 +218,7 @@ public class MazeRenderer : MonoBehaviour
         {
             foreach (var portalData in section.Portals)
             {
-                var clone = PortalObjectPool.Instance.GetObject(Grid.GetCellCenterWorld((Vector3Int)portalData.FromLocalPos));
+                var clone = PortalObjectPool.Instance.GetObject(Grid.GetCellCenterWorld((Vector3Int)portalData.FromPos));
                 if (clone == null)
                     return;
 

@@ -21,7 +21,7 @@ public class LevelManager : MonoBehaviour
         Debug.Log("LM started");
 
         MazeTowerGenerator.CreateMaze();
-        MazeRenderer.RenderFloor(MazeTowerGenerator.StartAt.Floor.GetFloorIndex());
+        MazeRenderer.RenderFloor(MazeTowerGenerator.StartAt.Floor.FloorIndex);
         Player.transform.position = Grid.GetCellCenterWorld((Vector3Int) MazeTowerGenerator.StartAt.CellPos);
 
         // move main camera to center of maze
