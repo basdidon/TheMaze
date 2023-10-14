@@ -1,0 +1,5 @@
+.h2-text {
+    font-size: 62px;
+    -unity-text-align: upper-right;
+    color: rgb(255, 255, 255);
+}

@@ -15,97 +15,97 @@ MonoBehaviour:
   DefaultTile: {fileID: 11400000, guid: ce80107318a084c44b81d7d63d8be23b, type: 2}
   TileConditions:
   - Tile: {fileID: 11400000, guid: f6ebdb6b49c48bf42b09297b9c82a347, type: 2}
-    rule4Dir:
+    rulePicker:
       rule_n: 1
       rule_s: 1
       rule_w: 1
       rule_e: 1
   - Tile: {fileID: 11400000, guid: 92413fc76002411449ceae6da7077a1c, type: 2}
-    rule4Dir:
+    rulePicker:
       rule_n: 1
       rule_s: 1
       rule_w: 1
       rule_e: 2
   - Tile: {fileID: 11400000, guid: 0e4faac5be402ef40b43675e7a29957a, type: 2}
-    rule4Dir:
+    rulePicker:
       rule_n: 1
       rule_s: 2
       rule_w: 1
       rule_e: 1
   - Tile: {fileID: 11400000, guid: e90cb1ddcfabcf243afee8d611614374, type: 2}
-    rule4Dir:
+    rulePicker:
       rule_n: 1
       rule_s: 1
       rule_w: 2
       rule_e: 1
   - Tile: {fileID: 11400000, guid: 8c969aa2255239340829f5ea7d941a81, type: 2}
-    rule4Dir:
+    rulePicker:
       rule_n: 2
       rule_s: 1
       rule_w: 1
       rule_e: 1
   - Tile: {fileID: 11400000, guid: be72d6bf09c93a347a770b86db35b69b, type: 2}
-    rule4Dir:
+    rulePicker:
       rule_n: 2
       rule_s: 2
       rule_w: 1
       rule_e: 1
   - Tile: {fileID: 11400000, guid: 997e55b6b8760364d82870a20fd28980, type: 2}
-    rule4Dir:
+    rulePicker:
       rule_n: 1
       rule_s: 1
       rule_w: 2
       rule_e: 2
   - Tile: {fileID: 11400000, guid: 9ebf11b24553ff1468df41d2b19620fe, type: 2}
-    rule4Dir:
+    rulePicker:
       rule_n: 2
       rule_s: 1
       rule_w: 1
       rule_e: 2
   - Tile: {fileID: 11400000, guid: 1f5b23be51786f94c84bf207efb1214a, type: 2}
-    rule4Dir:
+    rulePicker:
       rule_n: 1
       rule_s: 2
       rule_w: 1
       rule_e: 2
   - Tile: {fileID: 11400000, guid: 2d4b8f1027876734c99480eb6dd68ede, type: 2}
-    rule4Dir:
+    rulePicker:
       rule_n: 1
       rule_s: 2
       rule_w: 2
       rule_e: 1
   - Tile: {fileID: 11400000, guid: 70576cbaaf2ac554ebcdea736e766f6f, type: 2}
-    rule4Dir:
+    rulePicker:
       rule_n: 2
       rule_s: 1
       rule_w: 2
       rule_e: 1
   - Tile: {fileID: 11400000, guid: 6e73ac8e3588a4b43a0dfbf2ae294b6c, type: 2}
-    rule4Dir:
+    rulePicker:
       rule_n: 1
       rule_s: 2
       rule_w: 2
       rule_e: 2
   - Tile: {fileID: 11400000, guid: 6e884ebacc21711468667c61902e10a1, type: 2}
-    rule4Dir:
+    rulePicker:
       rule_n: 2
       rule_s: 2
       rule_w: 2
       rule_e: 1
   - Tile: {fileID: 11400000, guid: 932eacdfafedbee43b5dd10bb8e53add, type: 2}
-    rule4Dir:
+    rulePicker:
       rule_n: 2
       rule_s: 1
       rule_w: 2
       rule_e: 2
   - Tile: {fileID: 11400000, guid: db10228909904ef459be75c76bdb0524, type: 2}
-    rule4Dir:
+    rulePicker:
       rule_n: 2
       rule_s: 2
       rule_w: 1
       rule_e: 2
   - Tile: {fileID: 11400000, guid: ce80107318a084c44b81d7d63d8be23b, type: 2}
-    rule4Dir:
+    rulePicker:
       rule_n: 2
       rule_s: 2
       rule_w: 2

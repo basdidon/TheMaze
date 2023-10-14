@@ -37,7 +37,7 @@ public class TileConditionPropertyDrawer : PropertyDrawer
 
         // rule picker
         var tileRulePickerContainer = root.Q("tile-rule-picker-container");
-        var TileRulePickerField = new PropertyField(property.FindPropertyRelative("rule4Dir"));
+        var TileRulePickerField = new PropertyField(property.FindPropertyRelative("rulePicker"));
         tileRulePickerContainer.Add(TileRulePickerField);
 
         // Sprite Object Field

@@ -195,6 +195,7 @@ public class MazeRenderer : MonoBehaviour
             // Path
             if (floor.TryGetCellData(rectPos, out CellData cellData))
             {
+                Debug.Log($"{cellData.connection}");
                 PathTileMap.SetTile(localCellPos, MazeTile.GetMacthingTile(cellData.connection));
             }
 
